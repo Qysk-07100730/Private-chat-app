@@ -1,13 +1,26 @@
 {
   "name": "私语角落",
   "short_name": "私语角落",
-  "description": "私人聊天模拟应用",
+  "description": "私人聊天模拟应用", 
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#2c3e50",
-  "orientation": "portrait", 
+  "orientation": "portrait",
   "scope": "./",
-  "icons": [],
-  "version": "1.0.1"
+  "categories": ["social", "entertainment"],
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/2c3e50/ffffff?text=💬",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/2c3e50/ffffff?text=💬", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
