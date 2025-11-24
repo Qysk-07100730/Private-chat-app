@@ -1003,26 +1003,44 @@
     </div>
 
     <script>
-        // 注册 Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js')
-      .then(function(registration) {
-        console.log('ServiceWorker 注册成功: ', registration.scope);
-      })
-      .catch(function(err) {
-        console.log('ServiceWorker 注册失败: ', err);
+    // === Service Worker 注册 ===
+    // 注册 Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js')
+          .then(function(registration) {
+            console.log('✅ ServiceWorker 注册成功: ', registration.scope);
+            
+            // 检测是否从主屏幕启动
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+              console.log('🎯 从主屏幕启动 - 独立模式');
+              document.body.classList.add('pwa-standalone');
+            }
+          })
+          .catch(function(err) {
+            console.log('❌ ServiceWorker 注册失败: ', err);
+          });
       });
-  });
-}
+    }
 
-// 检测是否从主屏幕启动
-window.addEventListener('load', function() {
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    console.log('从主屏幕启动 - 独立模式');
-    document.body.classList.add('pwa-mode');
-  }
-});
+    // Edge 浏览器专用检测
+    if (navigator.userAgent.includes('Edg/')) {
+      console.log('🔍 检测到 Edge 浏览器');
+      window.addEventListener('load', function() {
+        // 强制激活 Service Worker
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(function(registration) {
+            console.log('🚀 Edge Service Worker 已准备就绪');
+          });
+        }
+      });
+    }
+    // === Service Worker 注册结束 ===
+
+    // 元素获取
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    // ... 后面是你原有的代码
         
         // 元素获取
         const chatContainer = document.getElementById('chat-container');
