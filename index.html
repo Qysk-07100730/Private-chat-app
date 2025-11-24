@@ -1003,9 +1003,7 @@
     </div>
 
     <script>
-
-        // ==================== 第4步：Edge PWA 专用配置 ====================
-
+        // ==================== Edge PWA 专用配置 ====================
 // Edge 浏览器 PWA 检测和安装
 let edgeDeferredPrompt;
 
@@ -1066,12 +1064,10 @@ function checkEdgePWAMode() {
   console.log('独立模式:', isStandalone, '全屏模式:', isFullscreen);
   
   if (isStandalone || isFullscreen) {
-    console.log('🎯 Edge PWA 独立模式运行 - 真正的应用窗口');
+    console.log('🎯 Edge PWA 独立模式运行');
     document.body.classList.add('edge-pwa-standalone');
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
   } else {
-    console.log('🌐 Edge 浏览器模式运行 - 在浏览器标签页中');
+    console.log('🌐 Edge 浏览器模式运行');
     document.body.classList.add('edge-pwa-browser');
   }
 }
@@ -1083,120 +1079,96 @@ if (navigator.userAgent.includes('Edg/')) {
   window.addEventListener('load', function() {
     console.log('🚀 页面加载完成，初始化 Edge PWA');
     checkEdgePWAMode();
-    
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(registration => {
-          console.log('✅ Edge Service Worker 注册成功');
-          
-          setTimeout(() => {
-            if (window.matchMedia('(display-mode: standalone)').matches) {
-              console.log('🚀 从 Edge PWA 启动 - 应用窗口模式');
-              window.scrollTo(0, 1);
-            }
-          }, 100);
-        })
-        .catch(err => {
-          console.log('❌ Edge Service Worker 注册失败:', err);
-        });
-    }
   });
-  
-  window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
-    console.log('显示模式变化:', e.matches);
-    checkEdgePWAMode();
-  });
-} else {
-  console.log('🌐 非 Edge 浏览器，使用标准 PWA 配置');
 }
 
-// ==================== Edge 配置结束 ====================
-        
-        // 元素获取
-        const chatContainer = document.getElementById('chat-container');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const quickReplyBtn = document.getElementById('quick-reply-btn');
-        const modeToggle = document.getElementById('mode-toggle');
-        const settingsToggle = document.getElementById('settings-toggle');
-        const settingsModal = document.getElementById('settings-modal');
-        const selfNameInput = document.getElementById('self-name-input');
-        const selfStatusInput = document.getElementById('self-status-input');
-        const selfAvatarUpload = document.getElementById('self-avatar-upload');
-        const selfAvatarPreview = document.getElementById('self-avatar-preview');
-        const selfAvatarDisplay = document.getElementById('self-avatar-display');
-        const selfNameDisplay = document.getElementById('self-name-display');
-        const selfStatusDisplay = document.getElementById('self-status-display');
-        const otherNameInput = document.getElementById('other-name-input');
-        const otherStatusInput = document.getElementById('other-status-input');
-        const otherAvatarUpload = document.getElementById('other-avatar-upload');
-        const otherAvatarPreview = document.getElementById('other-avatar-preview');
-        const otherAvatarDisplay = document.getElementById('other-avatar-display');
-        const otherNameDisplay = document.getElementById('other-name-display');
-        const otherStatusDisplay = document.getElementById('other-status-display');
-        const sloganInput = document.getElementById('slogan-input');
-        const sloganDisplay = document.getElementById('slogan-display');
-        const saveProfile = document.getElementById('save-profile');
-        const closeSettings = document.getElementById('close-settings');
-        const bubbleModal = document.getElementById('bubble-modal');
-        const selfBubbleColor = document.getElementById('self-bubble-color');
-        const selfTextColor = document.getElementById('self-text-color');
-        const otherBubbleColor = document.getElementById('other-bubble-color');
-        const otherTextColor = document.getElementById('other-text-color');
-        const saveBubble = document.getElementById('save-bubble');
-        const closeBubble = document.getElementById('close-bubble');
-        const clearBtn = document.getElementById('clear-btn');
-        const exportBtn = document.getElementById('export-btn');
-        const scrollTopBtn = document.getElementById('scroll-top-btn');
-        const backgroundBtn = document.getElementById('background-btn');
-        const backgroundModal = document.getElementById('background-modal');
-        const backgroundUpload = document.getElementById('background-upload');
-        const backgroundPreview = document.getElementById('background-preview');
-        const backgroundImage = document.getElementById('background-image');
-        const backgroundOpacity = document.getElementById('background-opacity');
-        const opacityValue = document.getElementById('opacity-value');
-        const blurToggle = document.getElementById('blur-toggle');
-        const resetBackground = document.getElementById('reset-background');
-        const saveBackground = document.getElementById('save-background');
-        const closeBackground = document.getElementById('close-background');
-        
-        // 回复管理相关元素
-        const manageRepliesBtn = document.getElementById('manage-replies-btn');
-        const repliesModal = document.getElementById('replies-modal');
-        const repliesList = document.getElementById('replies-list');
-        const repliesCount = document.getElementById('replies-count');
-        const saveReplies = document.getElementById('save-replies');
-        const closeReplies = document.getElementById('close-replies');
-        const newReplyInput = document.getElementById('new-reply-input');
-        const addReplyBtn = document.getElementById('add-reply-btn');
+// ==================== 聊天应用核心功能 ====================
 
-        // 音效
-        const sendSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
-        const receiveSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+// 元素获取
+const chatContainer = document.getElementById('chat-container');
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+const quickReplyBtn = document.getElementById('quick-reply-btn');
+const modeToggle = document.getElementById('mode-toggle');
+const settingsToggle = document.getElementById('settings-toggle');
+const settingsModal = document.getElementById('settings-modal');
+const selfNameInput = document.getElementById('self-name-input');
+const selfStatusInput = document.getElementById('self-status-input');
+const selfAvatarUpload = document.getElementById('self-avatar-upload');
+const selfAvatarPreview = document.getElementById('self-avatar-preview');
+const selfAvatarDisplay = document.getElementById('self-avatar-display');
+const selfNameDisplay = document.getElementById('self-name-display');
+const selfStatusDisplay = document.getElementById('self-status-display');
+const otherNameInput = document.getElementById('other-name-input');
+const otherStatusInput = document.getElementById('other-status-input');
+const otherAvatarUpload = document.getElementById('other-avatar-upload');
+const otherAvatarPreview = document.getElementById('other-avatar-preview');
+const otherAvatarDisplay = document.getElementById('other-avatar-display');
+const otherNameDisplay = document.getElementById('other-name-display');
+const otherStatusDisplay = document.getElementById('other-status-display');
+const sloganInput = document.getElementById('slogan-input');
+const sloganDisplay = document.getElementById('slogan-display');
+const saveProfile = document.getElementById('save-profile');
+const closeSettings = document.getElementById('close-settings');
+const bubbleModal = document.getElementById('bubble-modal');
+const selfBubbleColor = document.getElementById('self-bubble-color');
+const selfTextColor = document.getElementById('self-text-color');
+const otherBubbleColor = document.getElementById('other-bubble-color');
+const otherTextColor = document.getElementById('other-text-color');
+const saveBubble = document.getElementById('save-bubble');
+const closeBubble = document.getElementById('close-bubble');
+const clearBtn = document.getElementById('clear-btn');
+const exportBtn = document.getElementById('export-btn');
+const scrollTopBtn = document.getElementById('scroll-top-btn');
+const backgroundBtn = document.getElementById('background-btn');
+const backgroundModal = document.getElementById('background-modal');
+const backgroundUpload = document.getElementById('background-upload');
+const backgroundPreview = document.getElementById('background-preview');
+const backgroundImage = document.getElementById('background-image');
+const backgroundOpacity = document.getElementById('background-opacity');
+const opacityValue = document.getElementById('opacity-value');
+const blurToggle = document.getElementById('blur-toggle');
+const resetBackground = document.getElementById('reset-background');
+const saveBackground = document.getElementById('save-background');
+const closeBackground = document.getElementById('close-background');
 
-        // 初始配置
-        const defaultConfig = {
-            selfName: '昵称',
-            selfStatus: '状态',
-            selfAvatar: 'https://picsum.photos/id/1/200',
-            otherName: '他的昵称',
-            otherStatus: '他的状态',
-            otherAvatar: 'https://picsum.photos/id/2/200',
-            slogan: '请编辑',
-            selfBubbleColor: '#2c3e50',
-            selfTextColor: '#ffffff',
-            otherBubbleColor: '#ffffff',
-            otherTextColor: '#333333',
-            isDarkMode: false,
-            backgroundImage: '',
-            backgroundOpacity: 0.1,
-            backgroundBlur: false,
-            soundEnabled: true
-        };
+// 回复管理相关元素
+const manageRepliesBtn = document.getElementById('manage-replies-btn');
+const repliesModal = document.getElementById('replies-modal');
+const repliesList = document.getElementById('replies-list');
+const repliesCount = document.getElementById('replies-count');
+const saveReplies = document.getElementById('save-replies');
+const closeReplies = document.getElementById('close-replies');
+const newReplyInput = document.getElementById('new-reply-input');
+const addReplyBtn = document.getElementById('add-reply-btn');
 
-        let config = JSON.parse(localStorage.getItem('chatConfig')) || defaultConfig;
+// 音效
+const sendSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+const receiveSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
 
-        // 完整回复库
+// 初始配置
+const defaultConfig = {
+    selfName: '昵称',
+    selfStatus: '状态',
+    selfAvatar: 'https://picsum.photos/id/1/200',
+    otherName: '他的昵称',
+    otherStatus: '他的状态',
+    otherAvatar: 'https://picsum.photos/id/2/200',
+    slogan: '请编辑',
+    selfBubbleColor: '#2c3e50',
+    selfTextColor: '#ffffff',
+    otherBubbleColor: '#ffffff',
+    otherTextColor: '#333333',
+    isDarkMode: false,
+    backgroundImage: '',
+    backgroundOpacity: 0.1,
+    backgroundBlur: false,
+    soundEnabled: true
+};
+
+let config = JSON.parse(localStorage.getItem('chatConfig')) || defaultConfig;
+
+// 完整回复库
 const replies = [
     // 问候寒暄
     "早上好", "中午好", "晚上好", "在吗？", "晚安", "好梦", "早点睡", "再见",
@@ -1309,654 +1281,499 @@ const replies = [
     "别担心", "那些是假象", "我会保护你", "没有受伤", "一点小伤而已", "有事就找我",
     "你来找我我就开心", "Ялюблютебе"
 ];
-
-        // 初始化页面
-        function initPage() {
-            // 加载个人信息
-            selfNameDisplay.textContent = config.selfName;
-            selfStatusDisplay.textContent = config.selfStatus;
-            selfAvatarDisplay.src = config.selfAvatar;
-            otherNameDisplay.textContent = config.otherName;
-            otherStatusDisplay.textContent = config.otherStatus;
-            otherAvatarDisplay.src = config.otherAvatar;
-            sloganDisplay.textContent = config.slogan;
-            
-            // 填充设置表单
-            selfNameInput.value = config.selfName;
-            selfStatusInput.value = config.selfStatus;
-            otherNameInput.value = config.otherName;
-            otherStatusInput.value = config.otherStatus;
-            sloganInput.value = config.slogan;
-            
-            // 加载气泡颜色
-            selfBubbleColor.value = config.selfBubbleColor;
-            selfTextColor.value = config.selfTextColor;
-            otherBubbleColor.value = config.otherBubbleColor;
-            otherTextColor.value = config.otherTextColor;
-            updateBubbleStyle();
-            
-            // 加载日间/夜间模式
-            if (config.isDarkMode) {
-                document.body.classList.add('dark-mode');
-                modeToggle.innerHTML = '<span>☀️</span>';
-            } else {
-                document.body.classList.remove('dark-mode');
-                modeToggle.innerHTML = '<span>🌙</span>';
-            }
-            
-            // 加载背景设置
-            loadBackgroundSettings();
-            
-            // 加载聊天记录
-            loadChatHistory();
-            
-            // 加载保存的回复
-            loadSavedReplies();
-        }
-
-        // 加载背景设置
-        function loadBackgroundSettings() {
-            if (config.backgroundImage) {
-                backgroundImage.src = config.backgroundImage;
-                backgroundImage.style.display = 'block';
-                backgroundPreview.src = config.backgroundImage;
-                backgroundPreview.style.display = 'block';
-            }
-            backgroundOpacity.value = config.backgroundOpacity;
-            opacityValue.textContent = Math.round(config.backgroundOpacity * 100) + '%';
-            backgroundImage.style.opacity = config.backgroundOpacity;
-            
-            if (config.backgroundBlur) {
-                document.body.classList.add('background-blur');
-                blurToggle.classList.add('active');
-                blurToggle.textContent = '模糊效果: 开启';
-            } else {
-                document.body.classList.remove('background-blur');
-                blurToggle.classList.remove('active');
-                blurToggle.textContent = '模糊效果: 关闭';
-            }
-        }
-
-        // 更新气泡样式
-        function updateBubbleStyle() {
-            document.querySelectorAll('.self-message').forEach(el => {
-                el.style.background = config.selfBubbleColor;
-                el.style.color = config.selfTextColor;
-            });
-            document.querySelectorAll('.other-message').forEach(el => {
-                el.style.background = config.otherBubbleColor;
-                el.style.color = config.otherTextColor;
-            });
-        }
-
-        // 检查空状态
-        function checkEmptyState() {
-            const hasMessages = chatContainer.querySelector('.message-wrapper');
-            const emptyState = chatContainer.querySelector('.empty-state');
-            
-            if (!hasMessages && !emptyState) {
-                chatContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">💬</div>
-                        <div class="empty-state-text">还没有消息</div>
-                        <div class="empty-state-subtext">发送一条消息开始聊天吧！</div>
-                    </div>
-                `;
-            } else if (hasMessages && emptyState) {
-                emptyState.remove();
-            }
-        }
-
-        // 加载聊天记录
-        function loadChatHistory() {
-            const history = localStorage.getItem('chatHistory');
-            if (history) {
-                const messages = JSON.parse(history);
-                messages.forEach(msg => renderMessage(msg.content, msg.isSelf, msg.time, msg.isRecalled));
-            }
-            checkEmptyState();
-        }
-
-        // 保存聊天记录
-        function saveChatHistory() {
-            const messages = [];
-            document.querySelectorAll('.message-wrapper').forEach(wrapper => {
-                const msg = wrapper.querySelector('.message');
-                const avatar = wrapper.querySelector('.message-avatar');
-                messages.push({
-                    content: msg.querySelector('.message-content')?.textContent || msg.textContent.replace(msg.querySelector('.message-time')?.textContent || '', '').trim(),
-                    isSelf: msg.classList.contains('self-message'),
-                    time: wrapper.dataset.time,
-                    isRecalled: msg.classList.contains('recalled-message'),
-                    avatar: avatar ? avatar.src : null
-                });
-            });
-            localStorage.setItem('chatHistory', JSON.stringify(messages));
-        }
-
-        // 格式化消息时间
-        function formatMessageTime(timestamp) {
-            const now = new Date();
-            const msgTime = new Date(Number(timestamp));
-            
-            if (now.toDateString() === msgTime.toDateString()) {
-                return msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            } else {
-                const yesterday = new Date(now);
-                yesterday.setDate(yesterday.getDate() - 1);
-                if (yesterday.toDateString() === msgTime.toDateString()) {
-                    return '昨天 ' + msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    return msgTime.getMonth() + 1 + '月' + msgTime.getDate() + '日 ' + 
-                           msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
-            }
-        }
-
-        // 渲染消息
-        function renderMessage(content, isSelf, time, isRecalled = false) {
-            const messageWrapper = document.createElement('div');
-            const messageDiv = document.createElement('div');
-            const avatarImg = document.createElement('img');
-            const contentWrapper = document.createElement('div');
-            
-            const wrapperType = isSelf ? 'self-message-wrapper' : 'other-message-wrapper';
-            const msgType = isSelf ? 'self-message' : 'other-message';
-            
-            messageWrapper.className = `message-wrapper ${wrapperType}`;
-            messageWrapper.dataset.time = time || new Date().getTime();
-            
-            // 设置头像
-            avatarImg.className = 'message-avatar';
-            avatarImg.src = isSelf ? config.selfAvatar : config.otherAvatar;
-            avatarImg.alt = isSelf ? config.selfName : config.otherName;
-            
-            // 内容包装器
-            contentWrapper.className = 'message-content-wrapper';
-            
-            // 消息气泡
-            messageDiv.className = `message ${msgType} ${isRecalled ? 'recalled-message' : ''}`;
-            messageDiv.style.background = isSelf ? config.selfBubbleColor : config.otherBubbleColor;
-            messageDiv.style.color = isSelf ? config.selfTextColor : config.otherTextColor;
-            
-            // 内容
-            const contentHtml = isRecalled ? '【消息已撤回】' : content;
-            messageDiv.innerHTML = `
-                <span class="message-content">${contentHtml}</span>
-            `;
-            
-            // 创建时间戳元素
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'message-time';
-            timeSpan.textContent = formatMessageTime(messageWrapper.dataset.time);
-            
-            // 组装元素
-            contentWrapper.appendChild(messageDiv);
-            contentWrapper.appendChild(timeSpan);
-            messageWrapper.appendChild(contentWrapper);
-            messageWrapper.appendChild(avatarImg);
-            
-            // 撤回按钮
-            if (isSelf && !isRecalled) {
-                const recallBtn = document.createElement('button');
-                recallBtn.className = 'recall-btn';
-                recallBtn.textContent = '撤回';
-                recallBtn.addEventListener('click', () => recallMessage(messageWrapper));
-                messageDiv.appendChild(recallBtn);
-            }
-            
-            chatContainer.appendChild(messageWrapper);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            checkEmptyState();
-        }
-
-        // 播放音效
-        function playSound(isSend) {
-            if (!config.soundEnabled) return;
-            
-            try {
-                if (isSend) {
-                    sendSound.currentTime = 0;
-                    sendSound.play().catch(e => console.log('音效播放失败:', e));
-                } else {
-                    receiveSound.currentTime = 0;
-                    receiveSound.play().catch(e => console.log('音效播放失败:', e));
-                }
-            } catch (e) {
-                console.log('音效播放错误:', e);
-            }
-        }
-
-        // 发送消息
-        function sendMessage() {
-            const content = messageInput.value.trim();
-            if (!content) return;
-            renderMessage(content, true);
-            playSound(true);
-            messageInput.value = '';
-            saveChatHistory();
-            
-            // 随机回复
-            setTimeout(() => {
-                const reply = replies[Math.floor(Math.random() * replies.length)];
-                renderMessage(reply, false);
-                playSound(false);
-                saveChatHistory();
-            }, 800);
-        }
-
-        // 一键回复
-        function quickReply() {
-            const reply = replies[Math.floor(Math.random() * replies.length)];
-            renderMessage(reply, false);
-            playSound(false);
-            saveChatHistory();
-        }
-
-        // 撤回消息
-        function recallMessage(messageWrapper) {
-            if (confirm('确定要撤回这条消息吗？')) {
-                const messageDiv = messageWrapper.querySelector('.message');
-                messageDiv.classList.add('recalled-message');
-                messageDiv.querySelector('.message-content').textContent = '【消息已撤回】';
-                messageDiv.querySelector('.recall-btn')?.remove();
-                saveChatHistory();
-            }
-        }
-
-        // 切换日间/夜间模式
-        function toggleMode() {
-            config.isDarkMode = !config.isDarkMode;
-            if (config.isDarkMode) {
-                document.body.classList.add('dark-mode');
-                modeToggle.innerHTML = '<span>☀️</span>';
-            } else {
-                document.body.classList.remove('dark-mode');
-                modeToggle.innerHTML = '<span>🌙</span>';
-            }
-            localStorage.setItem('chatConfig', JSON.stringify(config));
-        }
-
-        // 打开设置弹窗
-        function openSettings() {
-            settingsModal.style.display = 'flex';
-        }
-
-        // 保存个人设置
-        function saveProfileSettings() {
-            config.selfName = selfNameInput.value.trim() || defaultConfig.selfName;
-            config.selfStatus = selfStatusInput.value.trim() || defaultConfig.selfStatus;
-            config.otherName = otherNameInput.value.trim() || defaultConfig.otherName;
-            config.otherStatus = otherStatusInput.value.trim() || defaultConfig.otherStatus;
-            config.slogan = sloganInput.value.trim() || defaultConfig.slogan;
-            
-            // 更新显示
-            selfNameDisplay.textContent = config.selfName;
-            selfStatusDisplay.textContent = config.selfStatus;
-            otherNameDisplay.textContent = config.otherName;
-            otherStatusDisplay.textContent = config.otherStatus;
-            sloganDisplay.textContent = config.slogan;
-            
-            // 保存到本地
-            localStorage.setItem('chatConfig', JSON.stringify(config));
-            settingsModal.style.display = 'none';
-            bubbleModal.style.display = 'flex';
-        }
-
-        // 上传头像预览
-        function previewSelfAvatar(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    selfAvatarPreview.src = event.target.result;
-                    selfAvatarPreview.style.display = 'block';
-                    config.selfAvatar = event.target.result;
-                    selfAvatarDisplay.src = event.target.result;
-                    document.querySelectorAll('.self-message-wrapper .message-avatar').forEach(avatar => {
-                        avatar.src = event.target.result;
-                    });
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function previewOtherAvatar(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    otherAvatarPreview.src = event.target.result;
-                    otherAvatarPreview.style.display = 'block';
-                    config.otherAvatar = event.target.result;
-                    otherAvatarDisplay.src = event.target.result;
-                    document.querySelectorAll('.other-message-wrapper .message-avatar').forEach(avatar => {
-                        avatar.src = event.target.result;
-                    });
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // 上传背景图片
-        function previewBackground(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    backgroundPreview.src = event.target.result;
-                    backgroundPreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // 保存背景设置
-        function saveBackgroundSettings() {
-            if (backgroundPreview.style.display !== 'none') {
-                config.backgroundImage = backgroundPreview.src;
-            }
-            config.backgroundOpacity = parseFloat(backgroundOpacity.value);
-            config.backgroundBlur = blurToggle.classList.contains('active');
-            
-            // 应用设置
-            if (config.backgroundImage) {
-                backgroundImage.src = config.backgroundImage;
-                backgroundImage.style.display = 'block';
-            } else {
-                backgroundImage.style.display = 'none';
-            }
-            backgroundImage.style.opacity = config.backgroundOpacity;
-            
-            if (config.backgroundBlur) {
-                document.body.classList.add('background-blur');
-            } else {
-                document.body.classList.remove('background-blur');
-            }
-            
-            localStorage.setItem('chatConfig', JSON.stringify(config));
-            backgroundModal.style.display = 'none';
-        }
-
-        // 重置背景
-        function resetBackgroundSettings() {
-            config.backgroundImage = '';
-            config.backgroundOpacity = 0.1;
-            config.backgroundBlur = false;
-            
-            backgroundImage.style.display = 'none';
-            backgroundPreview.style.display = 'none';
-            backgroundOpacity.value = 0.1;
-            opacityValue.textContent = '10%';
-            blurToggle.classList.remove('active');
-            blurToggle.textContent = '模糊效果: 关闭';
-            document.body.classList.remove('background-blur');
-            
-            localStorage.setItem('chatConfig', JSON.stringify(config));
-        }
-
-        // 保存气泡样式
-        function saveBubbleSettings() {
-            config.selfBubbleColor = selfBubbleColor.value;
-            config.selfTextColor = selfTextColor.value;
-            config.otherBubbleColor = otherBubbleColor.value;
-            config.otherTextColor = otherTextColor.value;
-            updateBubbleStyle();
-            localStorage.setItem('chatConfig', JSON.stringify(config));
-            bubbleModal.style.display = 'none';
-        }
-
-        // 清空聊天记录
-        function clearChatHistory() {
-            if (confirm('确定要清空所有聊天记录吗？')) {
-                localStorage.removeItem('chatHistory');
-                chatContainer.innerHTML = '';
-                checkEmptyState();
-            }
-        }
-
-        // 导出聊天记录
-        function exportChatHistory() {
-            const history = localStorage.getItem('chatHistory');
-            if (!history) {
-                alert('没有聊天记录可导出！');
-                return;
-            }
-            
-            const messages = JSON.parse(history);
-            let exportContent = `聊天记录导出 - ${new Date().toLocaleString()}\n\n`;
-            exportContent += `我的昵称: ${config.selfName}\n`;
-            exportContent += `对方昵称: ${config.otherName}\n`;
-            exportContent += '='.repeat(50) + '\n\n';
-            
-            messages.forEach(msg => {
-                const time = new Date(Number(msg.time)).toLocaleString();
-                const sender = msg.isSelf ? config.selfName : config.otherName;
-                const content = msg.isRecalled ? '【消息已撤回】' : msg.content;
-                exportContent += `[${time}] ${sender}: ${content}\n`;
-            });
-            
-            // 创建下载链接
-            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `聊天记录_${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('聊天记录已导出为文本文件！');
-        }
-
-        // 滚动到顶部
-        function scrollToTop() {
-            chatContainer.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // 打开背景设置
-        function openBackgroundSettings() {
-            backgroundModal.style.display = 'flex';
-        }
-
-        // ============================================
-        // 回复管理功能函数
-        // ============================================
-
-        // 打开回复管理弹窗
-        function openRepliesManagement() {
-            renderRepliesList();
-            repliesModal.style.display = 'flex';
-            newReplyInput.focus();
-        }
-
-        // 渲染回复列表到页面
-        function renderRepliesList() {
-            if (replies.length === 0) {
-                repliesList.innerHTML = '<div class="empty-replies">暂无回复内容，请添加第一条回复</div>';
-                repliesCount.textContent = '0';
-                return;
-            }
-            
-            repliesList.innerHTML = replies.map((reply, index) => `
-                <div class="reply-item" data-index="${index}">
-                    <div class="reply-content">${escapeHtml(reply)}</div>
-                    <div class="reply-actions">
-                        <button class="reply-action-btn reply-edit-btn" onclick="editReply(${index})">✏️ 编辑</button>
-                        <button class="reply-action-btn reply-delete-btn" onclick="deleteReply(${index})">🗑️ 删除</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            repliesCount.textContent = replies.length;
-        }
-
-        // HTML转义函数，防止XSS
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // 编辑回复内容
-        function editReply(index) {
-            const currentReply = replies[index];
-            const newReply = prompt('编辑回复内容:', currentReply);
-            
-            if (newReply !== null) {
-                const trimmedReply = newReply.trim();
-                if (trimmedReply === '') {
-                    alert('回复内容不能为空！');
-                    return;
-                }
-                if (trimmedReply.length > 100) {
-                    alert('回复内容不能超过100个字符！');
-                    return;
-                }
-                
-                replies[index] = trimmedReply;
-                renderRepliesList();
-                showTempMessage('回复内容已更新！');
-            }
-        }
-
-        // 删除回复内容
-        function deleteReply(index) {
-            if (confirm(`确定要删除这条回复吗？\n"${replies[index]}"`)) {
-                replies.splice(index, 1);
-                renderRepliesList();
-                showTempMessage('回复内容已删除！');
-            }
-        }
-
-        // 添加新回复
-        function addNewReply() {
-            const newReply = newReplyInput.value.trim();
-            
-            if (newReply === '') {
-                alert('请输入回复内容！');
-                return;
-            }
-            
-            if (newReply.length > 100) {
-                alert('回复内容不能超过100个字符！');
-                return;
-            }
-            
-            // 检查是否已存在相同回复
-            if (replies.includes(newReply)) {
-                alert('该回复内容已存在！');
-                return;
-            }
-            
-            replies.push(newReply);
-            newReplyInput.value = '';
-            renderRepliesList();
-            showTempMessage('新回复已添加！');
-            newReplyInput.focus();
-        }
-
-        // 保存所有回复修改
-        function saveAllReplies() {
-            try {
-                localStorage.setItem('chatReplies', JSON.stringify(replies));
-                showTempMessage('回复内容已保存到本地存储！');
-                setTimeout(() => {
-                    repliesModal.style.display = 'none';
-                }, 1000);
-            } catch (e) {
-                alert('保存失败：' + e.message);
-            }
-        }
-
-        // 显示临时提示消息
-        function showTempMessage(message) {
-            const tempMsg = document.createElement('div');
-            tempMsg.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.8);
-                color: white;
-                padding: 10px 20px;
-                border-radius: 8px;
-                z-index: 10000;
-                font-size: 14px;
-            `;
-            tempMsg.textContent = message;
-            document.body.appendChild(tempMsg);
-            
-            setTimeout(() => {
-                document.body.removeChild(tempMsg);
-            }, 2000);
-        }
-
-        // 加载保存的回复
-        function loadSavedReplies() {
-            const savedReplies = localStorage.getItem('chatReplies');
-            if (savedReplies) {
-                try {
-                    const parsedReplies = JSON.parse(savedReplies);
-                    if (Array.isArray(parsedReplies) && parsedReplies.length > 0) {
-                        replies.length = 0;
-                        replies.push(...parsedReplies);
-                    }
-                } catch (e) {
-                    console.log('加载保存的回复失败，使用默认回复');
-                }
-            }
-        }
-
-        // 绑定事件
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (e) => e.key === 'Enter' && sendMessage());
-        quickReplyBtn.addEventListener('click', quickReply);
-        modeToggle.addEventListener('click', toggleMode);
-        settingsToggle.addEventListener('click', openSettings);
-        selfAvatarUpload.addEventListener('change', previewSelfAvatar);
-        otherAvatarUpload.addEventListener('change', previewOtherAvatar);
-        saveProfile.addEventListener('click', saveProfileSettings);
-        closeSettings.addEventListener('click', () => settingsModal.style.display = 'none');
-        saveBubble.addEventListener('click', saveBubbleSettings);
-        closeBubble.addEventListener('click', () => bubbleModal.style.display = 'none');
-        clearBtn.addEventListener('click', clearChatHistory);
-        exportBtn.addEventListener('click', exportChatHistory);
-        scrollTopBtn.addEventListener('click', scrollToTop);
-        backgroundBtn.addEventListener('click', openBackgroundSettings);
-        backgroundUpload.addEventListener('change', previewBackground);
-        backgroundOpacity.addEventListener('input', () => {
-            const value = Math.round(backgroundOpacity.value * 100);
-            opacityValue.textContent = value + '%';
-            backgroundPreview.style.opacity = backgroundOpacity.value;
-        });
-        blurToggle.addEventListener('click', () => {
-            blurToggle.classList.toggle('active');
-            blurToggle.textContent = blurToggle.classList.contains('active') ? 
-                '模糊效果: 开启' : '模糊效果: 关闭';
-        });
-        resetBackground.addEventListener('click', resetBackgroundSettings);
-        saveBackground.addEventListener('click', saveBackgroundSettings);
-        closeBackground.addEventListener('click', () => backgroundModal.style.display = 'none');
         
-        // 回复管理事件绑定
-        manageRepliesBtn.addEventListener('click', openRepliesManagement);
-        saveReplies.addEventListener('click', saveAllReplies);
-        closeReplies.addEventListener('click', () => repliesModal.style.display = 'none');
-        addReplyBtn.addEventListener('click', addNewReply);
-        newReplyInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addNewReply();
-        });
+// 初始化页面
+function initPage() {
+    console.log('🚀 初始化页面...');
+    
+    // 加载个人信息
+    selfNameDisplay.textContent = config.selfName;
+    selfStatusDisplay.textContent = config.selfStatus;
+    selfAvatarDisplay.src = config.selfAvatar;
+    otherNameDisplay.textContent = config.otherName;
+    otherStatusDisplay.textContent = config.otherStatus;
+    otherAvatarDisplay.src = config.otherAvatar;
+    sloganDisplay.textContent = config.slogan;
+    
+    // 填充设置表单
+    selfNameInput.value = config.selfName;
+    selfStatusInput.value = config.selfStatus;
+    otherNameInput.value = config.otherName;
+    otherStatusInput.value = config.otherStatus;
+    sloganInput.value = config.slogan;
+    
+    // 加载气泡颜色
+    selfBubbleColor.value = config.selfBubbleColor;
+    selfTextColor.value = config.selfTextColor;
+    otherBubbleColor.value = config.otherBubbleColor;
+    otherTextColor.value = config.otherTextColor;
+    updateBubbleStyle();
+    
+    // 加载日间/夜间模式
+    if (config.isDarkMode) {
+        document.body.classList.add('dark-mode');
+        modeToggle.innerHTML = '<span>☀️</span>';
+    } else {
+        document.body.classList.remove('dark-mode');
+        modeToggle.innerHTML = '<span>🌙</span>';
+    }
+    
+    // 加载背景设置
+    loadBackgroundSettings();
+    
+    // 加载聊天记录
+    loadChatHistory();
+    
+    // 加载保存的回复
+    loadSavedReplies();
+    
+    console.log('✅ 页面初始化完成');
+}
 
-        // 初始化
-        initPage();
+// 加载背景设置
+function loadBackgroundSettings() {
+    if (config.backgroundImage) {
+        backgroundImage.src = config.backgroundImage;
+        backgroundImage.style.display = 'block';
+        backgroundPreview.src = config.backgroundImage;
+        backgroundPreview.style.display = 'block';
+    }
+    backgroundOpacity.value = config.backgroundOpacity;
+    opacityValue.textContent = Math.round(config.backgroundOpacity * 100) + '%';
+    backgroundImage.style.opacity = config.backgroundOpacity;
+    
+    if (config.backgroundBlur) {
+        document.body.classList.add('background-blur');
+        blurToggle.classList.add('active');
+        blurToggle.textContent = '模糊效果: 开启';
+    } else {
+        document.body.classList.remove('background-blur');
+        blurToggle.classList.remove('active');
+        blurToggle.textContent = '模糊效果: 关闭';
+    }
+}
+
+// 更新气泡样式
+function updateBubbleStyle() {
+    document.querySelectorAll('.self-message').forEach(el => {
+        el.style.background = config.selfBubbleColor;
+        el.style.color = config.selfTextColor;
+    });
+    document.querySelectorAll('.other-message').forEach(el => {
+        el.style.background = config.otherBubbleColor;
+        el.style.color = config.otherTextColor;
+    });
+}
+
+// 检查空状态
+function checkEmptyState() {
+    const hasMessages = chatContainer.querySelector('.message-wrapper');
+    const emptyState = chatContainer.querySelector('.empty-state');
+    
+    if (!hasMessages && !emptyState) {
+        chatContainer.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <div class="empty-state-text">还没有消息</div>
+                <div class="empty-state-subtext">发送一条消息开始聊天吧！</div>
+            </div>
+        `;
+    } else if (hasMessages && emptyState) {
+        emptyState.remove();
+    }
+}
+
+// 加载聊天记录
+function loadChatHistory() {
+    const history = localStorage.getItem('chatHistory');
+    if (history) {
+        const messages = JSON.parse(history);
+        messages.forEach(msg => renderMessage(msg.content, msg.isSelf, msg.time, msg.isRecalled));
+    }
+    checkEmptyState();
+}
+
+// 保存聊天记录
+function saveChatHistory() {
+    const messages = [];
+    document.querySelectorAll('.message-wrapper').forEach(wrapper => {
+        const msg = wrapper.querySelector('.message');
+        messages.push({
+            content: msg.querySelector('.message-content')?.textContent || msg.textContent,
+            isSelf: msg.classList.contains('self-message'),
+            time: wrapper.dataset.time,
+            isRecalled: msg.classList.contains('recalled-message')
+        });
+    });
+    localStorage.setItem('chatHistory', JSON.stringify(messages));
+}
+
+// 格式化消息时间
+function formatMessageTime(timestamp) {
+    const now = new Date();
+    const msgTime = new Date(Number(timestamp));
+    
+    if (now.toDateString() === msgTime.toDateString()) {
+        return msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+        return msgTime.getMonth() + 1 + '月' + msgTime.getDate() + '日 ' + 
+               msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+}
+
+// 渲染消息
+function renderMessage(content, isSelf, time, isRecalled = false) {
+    const messageWrapper = document.createElement('div');
+    const messageDiv = document.createElement('div');
+    const avatarImg = document.createElement('img');
+    const contentWrapper = document.createElement('div');
+    
+    const wrapperType = isSelf ? 'self-message-wrapper' : 'other-message-wrapper';
+    const msgType = isSelf ? 'self-message' : 'other-message';
+    
+    messageWrapper.className = `message-wrapper ${wrapperType}`;
+    messageWrapper.dataset.time = time || new Date().getTime();
+    
+    // 设置头像
+    avatarImg.className = 'message-avatar';
+    avatarImg.src = isSelf ? config.selfAvatar : config.otherAvatar;
+    avatarImg.alt = isSelf ? config.selfName : config.otherName;
+    
+    // 内容包装器
+    contentWrapper.className = 'message-content-wrapper';
+    
+    // 消息气泡
+    messageDiv.className = `message ${msgType} ${isRecalled ? 'recalled-message' : ''}`;
+    messageDiv.style.background = isSelf ? config.selfBubbleColor : config.otherBubbleColor;
+    messageDiv.style.color = isSelf ? config.selfTextColor : config.otherTextColor;
+    
+    // 内容
+    const contentHtml = isRecalled ? '【消息已撤回】' : content;
+    messageDiv.innerHTML = `
+        <span class="message-content">${contentHtml}</span>
+    `;
+    
+    // 创建时间戳元素
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'message-time';
+    timeSpan.textContent = formatMessageTime(messageWrapper.dataset.time);
+    
+    // 组装元素
+    contentWrapper.appendChild(messageDiv);
+    contentWrapper.appendChild(timeSpan);
+    messageWrapper.appendChild(contentWrapper);
+    messageWrapper.appendChild(avatarImg);
+    
+    // 撤回按钮
+    if (isSelf && !isRecalled) {
+        const recallBtn = document.createElement('button');
+        recallBtn.className = 'recall-btn';
+        recallBtn.textContent = '撤回';
+        recallBtn.addEventListener('click', () => recallMessage(messageWrapper));
+        messageDiv.appendChild(recallBtn);
+    }
+    
+    chatContainer.appendChild(messageWrapper);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    checkEmptyState();
+}
+
+// 播放音效
+function playSound(isSend) {
+    if (!config.soundEnabled) return;
+    
+    try {
+        if (isSend) {
+            sendSound.currentTime = 0;
+            sendSound.play().catch(e => console.log('音效播放失败:', e));
+        } else {
+            receiveSound.currentTime = 0;
+            receiveSound.play().catch(e => console.log('音效播放失败:', e));
+        }
+    } catch (e) {
+        console.log('音效播放错误:', e);
+    }
+}
+
+// 发送消息
+function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content) return;
+    renderMessage(content, true);
+    playSound(true);
+    messageInput.value = '';
+    saveChatHistory();
+    
+    // 随机回复
+    setTimeout(() => {
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        renderMessage(reply, false);
+        playSound(false);
+        saveChatHistory();
+    }, 800);
+}
+
+// 一键回复
+function quickReply() {
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    renderMessage(reply, false);
+    playSound(false);
+    saveChatHistory();
+}
+
+// 撤回消息
+function recallMessage(messageWrapper) {
+    if (confirm('确定要撤回这条消息吗？')) {
+        const messageDiv = messageWrapper.querySelector('.message');
+        messageDiv.classList.add('recalled-message');
+        messageDiv.querySelector('.message-content').textContent = '【消息已撤回】';
+        messageDiv.querySelector('.recall-btn')?.remove();
+        saveChatHistory();
+    }
+}
+
+// 切换日间/夜间模式
+function toggleMode() {
+    config.isDarkMode = !config.isDarkMode;
+    if (config.isDarkMode) {
+        document.body.classList.add('dark-mode');
+        modeToggle.innerHTML = '<span>☀️</span>';
+    } else {
+        document.body.classList.remove('dark-mode');
+        modeToggle.innerHTML = '<span>🌙</span>';
+    }
+    localStorage.setItem('chatConfig', JSON.stringify(config));
+}
+
+// 打开设置弹窗
+function openSettings() {
+    settingsModal.style.display = 'flex';
+}
+
+// 保存个人设置
+function saveProfileSettings() {
+    config.selfName = selfNameInput.value.trim() || defaultConfig.selfName;
+    config.selfStatus = selfStatusInput.value.trim() || defaultConfig.selfStatus;
+    config.otherName = otherNameInput.value.trim() || defaultConfig.otherName;
+    config.otherStatus = otherStatusInput.value.trim() || defaultConfig.otherStatus;
+    config.slogan = sloganInput.value.trim() || defaultConfig.slogan;
+    
+    // 更新显示
+    selfNameDisplay.textContent = config.selfName;
+    selfStatusDisplay.textContent = config.selfStatus;
+    otherNameDisplay.textContent = config.otherName;
+    otherStatusDisplay.textContent = config.otherStatus;
+    sloganDisplay.textContent = config.slogan;
+    
+    // 保存到本地
+    localStorage.setItem('chatConfig', JSON.stringify(config));
+    settingsModal.style.display = 'none';
+    bubbleModal.style.display = 'flex';
+}
+
+// 上传头像预览
+function previewSelfAvatar(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            selfAvatarPreview.src = event.target.result;
+            selfAvatarPreview.style.display = 'block';
+            config.selfAvatar = event.target.result;
+            selfAvatarDisplay.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function previewOtherAvatar(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            otherAvatarPreview.src = event.target.result;
+            otherAvatarPreview.style.display = 'block';
+            config.otherAvatar = event.target.result;
+            otherAvatarDisplay.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 上传背景图片
+function previewBackground(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            backgroundPreview.src = event.target.result;
+            backgroundPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 保存背景设置
+function saveBackgroundSettings() {
+    if (backgroundPreview.style.display !== 'none') {
+        config.backgroundImage = backgroundPreview.src;
+    }
+    config.backgroundOpacity = parseFloat(backgroundOpacity.value);
+    config.backgroundBlur = blurToggle.classList.contains('active');
+    
+    // 应用设置
+    if (config.backgroundImage) {
+        backgroundImage.src = config.backgroundImage;
+        backgroundImage.style.display = 'block';
+    } else {
+        backgroundImage.style.display = 'none';
+    }
+    backgroundImage.style.opacity = config.backgroundOpacity;
+    
+    if (config.backgroundBlur) {
+        document.body.classList.add('background-blur');
+    } else {
+        document.body.classList.remove('background-blur');
+    }
+    
+    localStorage.setItem('chatConfig', JSON.stringify(config));
+    backgroundModal.style.display = 'none';
+}
+
+// 重置背景
+function resetBackgroundSettings() {
+    config.backgroundImage = '';
+    config.backgroundOpacity = 0.1;
+    config.backgroundBlur = false;
+    
+    backgroundImage.style.display = 'none';
+    backgroundPreview.style.display = 'none';
+    backgroundOpacity.value = 0.1;
+    opacityValue.textContent = '10%';
+    blurToggle.classList.remove('active');
+    blurToggle.textContent = '模糊效果: 关闭';
+    document.body.classList.remove('background-blur');
+    
+    localStorage.setItem('chatConfig', JSON.stringify(config));
+}
+
+// 保存气泡样式
+function saveBubbleSettings() {
+    config.selfBubbleColor = selfBubbleColor.value;
+    config.selfTextColor = selfTextColor.value;
+    config.otherBubbleColor = otherBubbleColor.value;
+    config.otherTextColor = otherTextColor.value;
+    updateBubbleStyle();
+    localStorage.setItem('chatConfig', JSON.stringify(config));
+    bubbleModal.style.display = 'none';
+}
+
+// 清空聊天记录
+function clearChatHistory() {
+    if (confirm('确定要清空所有聊天记录吗？')) {
+        localStorage.removeItem('chatHistory');
+        chatContainer.innerHTML = '';
+        checkEmptyState();
+    }
+}
+
+// 导出聊天记录
+function exportChatHistory() {
+    const history = localStorage.getItem('chatHistory');
+    if (!history) {
+        alert('没有聊天记录可导出！');
+        return;
+    }
+    
+    const messages = JSON.parse(history);
+    let exportContent = `聊天记录导出 - ${new Date().toLocaleString()}\n\n`;
+    exportContent += `我的昵称: ${config.selfName}\n`;
+    exportContent += `对方昵称: ${config.otherName}\n`;
+    exportContent += '='.repeat(50) + '\n\n';
+    
+    messages.forEach(msg => {
+        const time = new Date(Number(msg.time)).toLocaleString();
+        const sender = msg.isSelf ? config.selfName : config.otherName;
+        const content = msg.isRecalled ? '【消息已撤回】' : msg.content;
+        exportContent += `[${time}] ${sender}: ${content}\n`;
+    });
+    
+    // 创建下载链接
+    const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `聊天记录_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert('聊天记录已导出为文本文件！');
+}
+
+// 滚动到顶部
+function scrollToTop() {
+    chatContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// 打开背景设置
+function openBackgroundSettings() {
+    backgroundModal.style.display = 'flex';
+}
+
+// 绑定事件
+function bindEvents() {
+    console.log('🔗 绑定事件...');
+    
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+    quickReplyBtn.addEventListener('click', quickReply);
+    modeToggle.addEventListener('click', toggleMode);
+    settingsToggle.addEventListener('click', openSettings);
+    selfAvatarUpload.addEventListener('change', previewSelfAvatar);
+    otherAvatarUpload.addEventListener('change', previewOtherAvatar);
+    saveProfile.addEventListener('click', saveProfileSettings);
+    closeSettings.addEventListener('click', () => settingsModal.style.display = 'none');
+    saveBubble.addEventListener('click', saveBubbleSettings);
+    closeBubble.addEventListener('click', () => bubbleModal.style.display = 'none');
+    clearBtn.addEventListener('click', clearChatHistory);
+    exportBtn.addEventListener('click', exportChatHistory);
+    scrollTopBtn.addEventListener('click', scrollToTop);
+    backgroundBtn.addEventListener('click', openBackgroundSettings);
+    backgroundUpload.addEventListener('change', previewBackground);
+    backgroundOpacity.addEventListener('input', () => {
+        const value = Math.round(backgroundOpacity.value * 100);
+        opacityValue.textContent = value + '%';
+        backgroundPreview.style.opacity = backgroundOpacity.value;
+    });
+    blurToggle.addEventListener('click', () => {
+        blurToggle.classList.toggle('active');
+        blurToggle.textContent = blurToggle.classList.contains('active') ? 
+            '模糊效果: 开启' : '模糊效果: 关闭';
+    });
+    resetBackground.addEventListener('click', resetBackgroundSettings);
+    saveBackground.addEventListener('click', saveBackgroundSettings);
+    closeBackground.addEventListener('click', () => backgroundModal.style.display = 'none');
+    
+    console.log('✅ 事件绑定完成');
+}
+
+// 初始化应用
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 DOM 加载完成，开始初始化应用');
+    initPage();
+    bindEvents();
+    console.log('🎉 应用初始化完成！');
+});
+
+// 调试信息
+console.log('📝 JavaScript 文件已加载');  
     </script>
 </body>
 </html>
