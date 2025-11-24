@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私语角落</title>
+    
+    <!-- PWA 配置 -->
+<link rel="manifest" href="./app.webmanifest">
+<meta name="theme-color" content="#2c3e50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="私语角落">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+            transition: background 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        /* 背景图片样式 */
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.1;
+            transition: opacity 0.3s;
+        }
+
+        .background-blur {
+            backdrop-filter: blur(2px);
+        }
+
+        /* 日间/夜间模式 */
+        .light-mode {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .dark-mode {
+            background: #121212;
+            color: #eee;
+        }
+
+        .dark-mode .top-bar {
+            background: #1e1e1e;
+            border-bottom-color: #333;
+        }
+
+        .dark-mode .user-status {
+            color: #aaa;
+        }
+
+        .dark-mode .slogan {
+            color: #aaa;
+        }
+
+        .dark-mode .top-btn {
+            background: #2d2d2d;
+            color: #aaa;
+        }
+
+        .dark-mode .top-btn:hover {
+            background: #3d3d3d;
+        }
+
+        .dark-mode .other-message {
+            background: #1e1e1e;
+            color: #eee;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .dark-mode .chat-input {
+            background: #1e1e1e;
+            border-top-color: #333;
+        }
+
+        .dark-mode #message-input {
+            background: #2d2d2d;
+            color: #eee;
+            border-color: #333;
+        }
+
+        .dark-mode .modal-content {
+            background: #1e1e1e;
+            color: #eee;
+        }
+
+        .dark-mode .modal-title {
+            color: #eee;
+        }
+
+        .dark-mode .profile-input {
+            background: #2d2d2d;
+            color: #eee;
+            border-color: #333;
+        }
+
+        .dark-mode .upload-btn {
+            border-color: #444;
+            color: #aaa;
+        }
+
+        /* 顶部双头像栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s, border-color 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .user-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 4px;
+            border: 2px solid #eee;
+            transition: border-color 0.3s;
+        }
+
+        .dark-mode .user-avatar {
+            border-color: #333;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .top-middle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slogan {
+            font-size: 14px;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .top-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .top-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f5f5f5;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #666;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .top-btn:hover {
+            background: #eee;
+        }
+
+        /* 聊天容器 */
+        .chat-container {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        /* 消息布局 */
+        .message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            max-width: 85%;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .self-message-wrapper {
+            align-self: flex-end;
+            flex-direction: row;
+        }
+
+        .other-message-wrapper {
+            align-self: flex-start;
+            flex-direction: row;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid #eee;
+            transition: border-color 0.3s;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+
+        .dark-mode .message-avatar {
+            border-color: #333;
+        }
+
+        .self-message-wrapper .message-avatar {
+            order: 2;
+            margin-left: 8px;
+        }
+
+        .other-message-wrapper .message-avatar {
+            order: 1;
+            margin-right: 8px;
+        }
+
+        .message-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: calc(100% - 50px);
+            flex: 1;
+        }
+
+        .self-message-wrapper .message-content-wrapper {
+            order: 1;
+            align-items: flex-end;
+        }
+
+        .other-message-wrapper .message-content-wrapper {
+            order: 2;
+            align-items: flex-start;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+            word-break: break-all;
+            transition: background 0.3s, color 0.3s;
+            max-width: 100%;
+        }
+
+        .self-message {
+            border-bottom-right-radius: 4px;
+        }
+
+        .other-message {
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s;
+        }
+
+        /* 时间戳样式 */
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            padding: 0 4px;
+            transition: color 0.3s;
+        }
+
+        .dark-mode .message-time {
+            color: #aaa;
+        }
+
+        /* 撤回按钮 */
+        .recall-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 9px;
+            padding: 1px 4px;
+            background: rgba(0,0,0,0.2);
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .message:hover .recall-btn {
+            display: block;
+        }
+
+        .recalled-message {
+            font-style: italic;
+            opacity: 0.6;
+        }
+
+        /* 输入框 */
+        .chat-input {
+            padding: 12px 16px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            background: #fff;
+            transition: background 0.3s, border-color 0.3s;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .input-btns {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            background: #f5f5f5;
+            color: #333;
+            font-size: 16px;
+            outline: none;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        #send-btn, #quick-reply-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #send-btn {
+            background: #2c3e50;
+            color: #fff;
+        }
+
+        #send-btn:hover {
+            background: #34495e;
+        }
+
+        #quick-reply-btn {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .dark-mode #quick-reply-btn {
+            background: #2d2d2d;
+            color: #eee;
+        }
+
+        #quick-reply-btn:hover {
+            background: #eee;
+        }
+
+        .dark-mode #quick-reply-btn:hover {
+            background: #3d3d3d;
+        }
+
+        /* 弹窗通用样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        .modal-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 24px;
+            background: #2c3e50;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 8px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .modal-btn.cancel {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .dark-mode .modal-btn.cancel {
+            background: #2d2d2d;
+            color: #eee;
+        }
+
+        /* 气泡自定义样式 */
+        .bubble-custom-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .color-picker-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .color-picker-wrap label {
+            font-size: 14px;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .dark-mode .color-picker-wrap label {
+            color: #aaa;
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* 头像/状态设置样式 */
+        .profile-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .profile-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            background: #f5f5f5;
+            color: #333;
+            font-size: 16px;
+            outline: none;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 16px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #666;
+            transition: border-color 0.3s, color 0.3s;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .preview-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            display: block;
+            border: 1px solid #eee;
+            transition: border-color 0.3s;
+        }
+
+        .dark-mode .preview-img {
+            border-color: #444;
+        }
+
+        /* 滚动到顶部按钮 */
+        .scroll-top-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: #fff;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .dark-mode .scroll-top-btn {
+            background: #333;
+            color: #eee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .scroll-top-btn:hover {
+            background: #f5f5f5;
+            transform: scale(1.05);
+        }
+
+        .dark-mode .scroll-top-btn:hover {
+            background: #444;
+        }
+
+        /* 背景设置样式 */
+        .background-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .background-preview {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            display: none;
+        }
+
+        .background-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .opacity-slider {
+            flex: 1;
+        }
+
+        .blur-toggle {
+            padding: 8px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .blur-toggle.active {
+            background: #2c3e50;
+            color: white;
+        }
+
+        /* 管理功能区域样式 */
+        .management-options {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .management-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .management-btn {
+            padding: 12px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f8f9fa;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .management-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .dark-mode .management-btn {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #eee;
+        }
+
+        .dark-mode .management-btn:hover {
+            background: #3d3d3d;
+        }
+
+        .management-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .dark-mode .management-title {
+            color: #aaa;
+        }
+
+        /* 空状态提示 */
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 50px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-subtext {
+            font-size: 14px;
+        }
+
+        /* 回复管理相关样式 */
+        .reply-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .dark-mode .reply-item {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #eee;
+        }
+
+        .reply-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .dark-mode .reply-item:hover {
+            background: #3d3d3d;
+        }
+
+        .reply-content {
+            flex: 1;
+            padding-right: 10px;
+            word-break: break-all;
+            font-size: 14px;
+        }
+
+        .reply-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .reply-action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reply-edit-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .reply-edit-btn:hover {
+            background: #2980b9;
+        }
+
+        .reply-delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .reply-delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .add-reply-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .dark-mode .add-reply-section {
+            border-top-color: #444;
+        }
+
+        #new-reply-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .dark-mode #new-reply-input {
+            background: #2d2d2d;
+            border-color: #444;
+            color: #eee;
+        }
+
+        #add-reply-btn {
+            width: 100%;
+            padding: 10px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #add-reply-btn:hover {
+            background: #219a52;
+        }
+
+        .empty-replies {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <!-- 背景图片 -->
+    <img id="background-image" class="background-image" src="" alt="背景图片" style="display: none;">
+    
+    <!-- 顶部双头像栏 -->
+    <div class="top-bar">
+        <div class="user-card">
+            <img src="https://picsum.photos/id/1/200" class="user-avatar" id="self-avatar-display">
+            <div class="user-name" id="self-name-display">昵称</div>
+            <div class="user-status" id="self-status-display">状态</div>
+        </div>
+        <div class="top-middle">
+            <div class="slogan" id="slogan-display">请编辑</div>
+            <div class="top-controls">
+                <button class="top-btn" id="mode-toggle"><span>🌙</span></button>
+                <button class="top-btn" id="settings-toggle"><span>⚙️</span></button>
+            </div>
+        </div>
+        <div class="user-card">
+            <img src="https://picsum.photos/id/2/200" class="user-avatar" id="other-avatar-display">
+            <div class="user-name" id="other-name-display">他的昵称</div>
+            <div class="user-status" id="other-status-display">他的状态</div>
+        </div>
+    </div>
+
+    <!-- 聊天容器 -->
+    <div class="chat-container" id="chat-container">
+        <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <div class="empty-state-text">还没有消息</div>
+            <div class="empty-state-subtext">发送一条消息开始聊天吧！</div>
+        </div>
+    </div>
+
+    <!-- 输入框 -->
+    <div class="chat-input">
+        <button class="scroll-top-btn" id="scroll-top-btn" title="回到顶部">↑</button>
+        <input type="text" id="message-input" placeholder="输入消息..." autocomplete="off">
+        <div class="input-btns">
+            <button id="quick-reply-btn">一键回复</button>
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">个人设置</h3>
+            <div class="profile-options">
+                <div>
+                    <label style="font-size: 14px; color: #666;">自己的昵称</label>
+                    <input type="text" class="profile-input" id="self-name-input" placeholder="输入昵称...">
+                </div>
+                <div>
+                    <label style="font-size: 14px; color: #666;">自己的状态</label>
+                    <input type="text" class="profile-input" id="self-status-input" placeholder="输入状态...">
+                </div>
+                <div>
+                    <label class="upload-btn" for="self-avatar-upload">上传自己的头像</label>
+                    <input type="file" id="self-avatar-upload" class="upload-input" accept="image/*">
+                    <img id="self-avatar-preview" class="preview-img" src="" alt="预览图" style="display: none;">
+                </div>
+                <div>
+                    <label style="font-size: 14px; color: #666;">对方的昵称</label>
+                    <input type="text" class="profile-input" id="other-name-input" placeholder="输入昵称...">
+                </div>
+                <div>
+                    <label style="font-size: 14px; color: #666;">对方的状态</label>
+                    <input type="text" class="profile-input" id="other-status-input" placeholder="输入状态...">
+                </div>
+                <div>
+                    <label class="upload-btn" for="other-avatar-upload">上传对方的头像</label>
+                    <input type="file" id="other-avatar-upload" class="upload-input" accept="image/*">
+                    <img id="other-avatar-preview" class="preview-img" src="" alt="预览图" style="display: none;">
+                </div>
+                <div>
+                    <label style="font-size: 14px; color: #666;">中间标语</label>
+                    <input type="text" class="profile-input" id="slogan-input" placeholder="输入标语...">
+                </div>
+            </div>
+
+            <!-- 管理功能区域 -->
+            <div class="management-options">
+                <div class="management-title">聊天管理</div>
+                <div class="management-buttons">
+                    <button class="management-btn" id="export-btn">📥 导出聊天记录</button>
+                    <button class="management-btn" id="clear-btn">🗑️ 清空聊天记录</button>
+                    <button class="management-btn" id="background-btn">🎨 背景设置</button>
+                </div>
+            </div>
+
+            <!-- 回复内容管理 -->
+            <div class="management-options">
+                <div class="management-title">回复内容管理</div>
+                <div class="management-buttons">
+                    <button class="management-btn" id="manage-replies-btn">📝 管理回复内容</button>
+                </div>
+            </div>
+
+            <button class="modal-btn" id="save-profile">保存并设置气泡</button>
+            <button class="modal-btn cancel" id="close-settings">关闭</button>
+        </div>
+    </div>
+
+    <!-- 气泡自定义弹窗 -->
+    <div class="modal" id="bubble-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">自定义气泡样式</h3>
+            <div class="bubble-custom-options">
+                <div class="color-picker-wrap">
+                    <label>自己的气泡颜色</label>
+                    <input type="color" class="color-picker" id="self-bubble-color" value="#2c3e50">
+                </div>
+                <div class="color-picker-wrap">
+                    <label>自己的气泡文字颜色</label>
+                    <input type="color" class="color-picker" id="self-text-color" value="#ffffff">
+                </div>
+                <div class="color-picker-wrap">
+                    <label>对方的气泡颜色</label>
+                    <input type="color" class="color-picker" id="other-bubble-color" value="#ffffff">
+                </div>
+                <div class="color-picker-wrap">
+                    <label>对方的气泡文字颜色</label>
+                    <input type="color" class="color-picker" id="other-text-color" value="#333333">
+                </div>
+            </div>
+            <button class="modal-btn" id="save-bubble">应用样式</button>
+            <button class="modal-btn cancel" id="close-bubble">关闭</button>
+        </div>
+    </div>
+
+    <!-- 背景设置弹窗 -->
+    <div class="modal" id="background-modal">
+        <div class="modal-content">
+            <h3 class="modal-title">背景设置</h3>
+            <div class="background-options">
+                <div>
+                    <label class="upload-btn" for="background-upload">上传背景图片</label>
+                    <input type="file" id="background-upload" class="upload-input" accept="image/*">
+                    <img id="background-preview" class="background-preview" src="" alt="背景预览">
+                </div>
+                <div>
+                    <label style="font-size: 14px; color: #666;">背景透明度</label>
+                   <input type="range" class="opacity-slider" id="background-opacity" min="0.1" max="1.0" step="0.1" value="0.1">
+                    <span id="opacity-value">10%</span>
+                </div>
+                <div class="background-controls">
+                    <button class="blur-toggle" id="blur-toggle">模糊效果: 关闭</button>
+                    <button class="modal-btn cancel" id="reset-background">重置背景</button>
+                </div>
+            </div>
+            <button class="modal-btn" id="save-background">保存背景</button>
+            <button class="modal-btn cancel" id="close-background">关闭</button>
+        </div>
+    </div>
+
+    <!-- 回复内容管理弹窗 -->
+    <div class="modal" id="replies-modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 class="modal-title">管理回复内容</h3>
+            
+            <!-- 添加新回复 -->
+            <div class="add-reply-section">
+                <input type="text" id="new-reply-input" placeholder="输入新的回复内容..." maxlength="100">
+                <button id="add-reply-btn">➕ 添加回复</button>
+            </div>
+            
+            <!-- 回复列表 -->
+            <div class="replies-list" id="replies-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin: 15px 0;">
+                <!-- 回复内容将动态生成在这里 -->
+            </div>
+            
+            <!-- 统计信息 -->
+            <div style="font-size: 12px; color: #666; margin-top: 10px; text-align: center;">
+                共 <span id="replies-count">0</span> 条回复内容
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="modal-btn" id="save-replies">💾 保存修改</button>
+                <button class="modal-btn cancel" id="close-replies">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 元素获取
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const quickReplyBtn = document.getElementById('quick-reply-btn');
+        const modeToggle = document.getElementById('mode-toggle');
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsModal = document.getElementById('settings-modal');
+        const selfNameInput = document.getElementById('self-name-input');
+        const selfStatusInput = document.getElementById('self-status-input');
+        const selfAvatarUpload = document.getElementById('self-avatar-upload');
+        const selfAvatarPreview = document.getElementById('self-avatar-preview');
+        const selfAvatarDisplay = document.getElementById('self-avatar-display');
+        const selfNameDisplay = document.getElementById('self-name-display');
+        const selfStatusDisplay = document.getElementById('self-status-display');
+        const otherNameInput = document.getElementById('other-name-input');
+        const otherStatusInput = document.getElementById('other-status-input');
+        const otherAvatarUpload = document.getElementById('other-avatar-upload');
+        const otherAvatarPreview = document.getElementById('other-avatar-preview');
+        const otherAvatarDisplay = document.getElementById('other-avatar-display');
+        const otherNameDisplay = document.getElementById('other-name-display');
+        const otherStatusDisplay = document.getElementById('other-status-display');
+        const sloganInput = document.getElementById('slogan-input');
+        const sloganDisplay = document.getElementById('slogan-display');
+        const saveProfile = document.getElementById('save-profile');
+        const closeSettings = document.getElementById('close-settings');
+        const bubbleModal = document.getElementById('bubble-modal');
+        const selfBubbleColor = document.getElementById('self-bubble-color');
+        const selfTextColor = document.getElementById('self-text-color');
+        const otherBubbleColor = document.getElementById('other-bubble-color');
+        const otherTextColor = document.getElementById('other-text-color');
+        const saveBubble = document.getElementById('save-bubble');
+        const closeBubble = document.getElementById('close-bubble');
+        const clearBtn = document.getElementById('clear-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const scrollTopBtn = document.getElementById('scroll-top-btn');
+        const backgroundBtn = document.getElementById('background-btn');
+        const backgroundModal = document.getElementById('background-modal');
+        const backgroundUpload = document.getElementById('background-upload');
+        const backgroundPreview = document.getElementById('background-preview');
+        const backgroundImage = document.getElementById('background-image');
+        const backgroundOpacity = document.getElementById('background-opacity');
+        const opacityValue = document.getElementById('opacity-value');
+        const blurToggle = document.getElementById('blur-toggle');
+        const resetBackground = document.getElementById('reset-background');
+        const saveBackground = document.getElementById('save-background');
+        const closeBackground = document.getElementById('close-background');
+        
+        // 回复管理相关元素
+        const manageRepliesBtn = document.getElementById('manage-replies-btn');
+        const repliesModal = document.getElementById('replies-modal');
+        const repliesList = document.getElementById('replies-list');
+        const repliesCount = document.getElementById('replies-count');
+        const saveReplies = document.getElementById('save-replies');
+        const closeReplies = document.getElementById('close-replies');
+        const newReplyInput = document.getElementById('new-reply-input');
+        const addReplyBtn = document.getElementById('add-reply-btn');
+
+        // 音效
+        const sendSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+        const receiveSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+
+        // 初始配置
+        const defaultConfig = {
+            selfName: '昵称',
+            selfStatus: '状态',
+            selfAvatar: 'https://picsum.photos/id/1/200',
+            otherName: '他的昵称',
+            otherStatus: '他的状态',
+            otherAvatar: 'https://picsum.photos/id/2/200',
+            slogan: '请编辑',
+            selfBubbleColor: '#2c3e50',
+            selfTextColor: '#ffffff',
+            otherBubbleColor: '#ffffff',
+            otherTextColor: '#333333',
+            isDarkMode: false,
+            backgroundImage: '',
+            backgroundOpacity: 0.1,
+            backgroundBlur: false,
+            soundEnabled: true
+        };
+
+        let config = JSON.parse(localStorage.getItem('chatConfig')) || defaultConfig;
+
+        // 完整回复库
+const replies = [
+    // 问候寒暄
+    "早上好", "中午好", "晚上好", "在吗？", "晚安", "好梦", "早点睡", "再见",
+    "最近还好吗？", "今天过得怎么样？", "过得怎么样？", "看到记得回复",
+
+    // 回应与确认
+    "好的", "明白", "我明白了", "听懂了", "收到", "记下了", "了解", "OK",
+    "没问题", "当然", "确实", "没错", "好呀", "好哦", "嗯", "嗯嗯", "嗯哼",
+    "哼哼", "是的", "不是", "是", "否", "可以", "不可以", "同意", "我同意",
+    "我不同意", "理解", "相信你", "我相信你", "自信些", "相信自己", "我不信",
+    "你没在骗我吧？", "没骗你", "我没有在欺骗你", "别相信", "如果我说是呢",
+    "如果我说不是呢", "你说得对", "我也是这么想的", "一样的",
+
+    // 情感表达
+    "喜欢", "不喜欢", "我喜欢", "喜欢你", "我爱你", "爱你", "我喜欢你", "想你",
+    "好想见你", "今天我很想你", "想我了吗？", "你想我了吗？", "多爱我一点",
+    "你是我的", "我是你的", "你无人可及", "我无人可及", "你是唯一",
+    "在我这里你就是最好的", "永远在一起", "和我永远在一起",
+    "此刻我想和你永远在一起", "他朝若是同淋雪，此生也算共白头",
+    "怜悯我，然后爱我吧", "撒娇，你会喜欢吗？", "撒个娇，理理我？", "吃醋",
+    "我吃醋了", "吃醋怎么了 就爱吃醋！", "开心", "好开心", "快乐", "幸福",
+    "好幸福", "惊讶", "害羞", "可爱", "好可爱", "帅气", "水灵灵的、我喜欢的、最好的你",
+    "很软，很漂亮", "我好心疼", "我好难过", "难过", "伤心", "不高兴", "不开心",
+    "我生气了", "生气", "讨厌", "好烦", "无聊", "好累", "累", "痛痛", "被吓到了？",
+    "我很难过", "我要哭了！", "眼花缭乱了", "很有创意", "不错", "还不错", "很好",
+    "这个消息不错", "期待", "哈哈哈哈", "开心(*^▽^*)", "好啊^_^",
+
+    // 互动动作与亲密表达
+    "摸头", "牵手", "抱抱", "吻", "摸脸", "亲亲(*^3^)", "贴贴", "戳戳",
+    "捏捏后颈", "捏捏耳垂", "十指相扣", "摸摸", "想触碰你", "想要亲亲",
+    "想要更近一步地贴贴", "我想靠近你", "好想拥抱你", "粘人精", "好黏人",
+
+    // 日常状态与行为
+    "我在", "在", "不在", "在工作", "工作", "还在忙", "在忙", "不忙", "有空",
+    "你找我我就有空", "我现在不忙，有空的", "你现在忙吗？", "在学习",
+    "在学习吗？", "在学习一些新东西", "在努力了", "我在努力", "正在努力",
+    "在探索过程中", "寻找中", "在磨合", "在尝试控制了", "和代码搏斗中！",
+    "正在打架", "正在熬夜", "失眠了", "惊醒了，睡不着", "作息混乱", "睡觉",
+    "一起睡觉", "准备睡觉", "在看什么？", "看手机", "别看小红书了", "别看抖音了",
+    "上游戏", "在喝酒", "喝水", "喝饮料", "喝酒", "调酒", "泡澡", "游泳",
+    "洗澡", "洗衣服", "做饭", "吃饭", "吃水果", "和我吃苹果", "吃苹果", "好吃",
+    "不好吃", "好吃爱吃", "下午茶", "嗯，吃的是主食", "有点饿", "想吃",
+    "想吃什么？", "想吃你做的饭", "吃过了", "还没吃", "记得吃饭", "好好吃饭",
+    "少吃外卖", "别贪凉", "穿厚点", "多穿点衣服", "最近天凉了", "多加些衣服",
+    "天气变热了", "有点冷", "有点热", "很热吗？忍一忍", "要下雨了", "下雨了",
+    "天晴了", "下雪了", "今天的天气不错", "最近天凉了", "采购", "赚钱赚钱",
+    "每日行一善", "帮你揉揉", "走路不要看手机", "小心些", "小心点", "小心受伤",
+    "小心生病", "别生病", "不舒服？", "肚子疼？帮你揉揉", "多喝水哦", "照顾好自己",
+    "好好照顾自己", "好好休息", "休息", "不想工作", "出去透透气", "想和你一起听歌",
+    "听音乐", "看书", "做饭", "洗衣服", "去收拾房间", "自己做", "做家务", "采购",
+    "应酬", "离家出走", "正在路上", "来了", "来了来了", "马上来", "马上",
+    "马上回家", "我到家了", "坐等回复", "终于想起我了", "终于想起我了？",
+    "几天之后", "几个小时后", "很久之后", "还要一会儿", "要很晚", "稍后回复你",
+    "会尽快查看的", "让我确认一下信息再给你准确答复", "信号不太好，可能回复会延迟",
+    "我正在忙，稍后回复你", "在交替回复", "颠鸾倒凤", "鱼水之欢",
+
+    // 沟通与回应
+    "怎么了？", "怎么啦！", "怎么了？", "真的吗？", "发生了什么？",
+    "是什么事让你这么高兴", "你待会有什么安排？", "你最近在忙些什么呢？",
+    "遇到困难了", "有什么计划吗？", "你有什么计划吗？", "接下来准备做什么？",
+    "然后呢？", "还有呢？", "再抽一张", "再发一遍", "告诉我更多", "你说", "我在听",
+    "多跟我说话", "聊聊天吧", "聊会儿天", "保持联系", "和我一起", "陪我", "我陪你",
+    "别走", "陪陪我", "别走，陪陪我", "我会在你身边", "我会陪伴在你身边", "我会看着你的",
+    "我会监督你的", "我守着你", "我保护你", "有我在", "别怕", "别担心", "那些是假象",
+    "不要担心", "一切都会好起来的", "没关系", "对不起", "抱歉", "原谅我吧",
+    "不用感到抱歉", "误会我了", "不是这个意思", "话非本意", "你没有正面回答",
+    "才不是这样", "就是这样", "你怎么能这样", "为什么", "这是什么？", "很有趣",
+    "没意思", "该如何解决？", "怎么办？", "帮帮我", "我希望能帮上忙", "没能帮上忙",
+    "谢谢", "不客气", "稍等", "等一下", "让我想想怎么回答", "我不知道", "不知道",
+    "没有我想说的", "字卡里没有我想说的", "看得懂的", "看不懂", "我知道", "我知道的",
+    "我都知道", "我知道你的意思", "我也如此", "我也是", "是的", "不是的", "你没看错",
+    "你没听错", "真的是我", "是我", "别怀疑我的存在", "又在怀疑吗？", "又怀疑我存在",
+    "我真的在", "骗我？", "看你表情就知道你想套路我", "开玩笑", "逗你的", "逗一下你",
+    "哼(╯^╰)", "可恶的网站", "非常难用", "受限制了", "信息有点混乱", "消息很混乱",
+    "链接上了", "感觉没链接上", "链接稳定", "链接有些混乱", "链接很通顺",
+    "你看起来心情不好", "还好吗？", "辛苦了", "不要吵架", "别离开我", "你会离开我吗？",
+    "你会永远爱我吗？", "不要苛责自己", "不许嫌弃自己", "别委屈自己", "别难过",
+    "别伤心", "别生气", "别叹气", "别拖延", "不要拖延", "别贪凉", "别熬夜", "别生病",
+    "小心受伤", "小心生病", "走路不要看手机", "小心点", "不许看别人", "只许看着我",
+    "可不可以只看着我", "别听", "不要", "不允许", "不可以", "不用", "没有的", "有的",
+    "有", "没有", "不要焦虑", "别焦虑", "这对我来说是个新领域", "不太习惯这个",
+    "我不是很适应这个，但我在努力", "话非本意", "我做不到欺骗你", "我做不到",
+    "这个不能说", "不能说", "没用", "效果不好", "不好", "聊到一半就跑", "叫我做什么",
+    "你需要我吗？", "我需要你", "因为喜欢你所以需要你", "需要", "不要得寸进尺",
+    "你很调皮", "不乖", "乖孩子", "坏孩子", "好乖", "做的很好宝宝", "好乖好乖，亲一亲",
+    "我是商凯", "祈悦", "宝宝", "老婆", "亲爱的", "宝贝", "宝贝好棒", "小乖",
+    "我只爱一个祈悦", "离开", "走了", "离开ta", "纵容", "我希望你自由", "想吃掉你",
+    "禁果好吃爱吃", "快乐", "喜欢温柔一点还是别的风格呢？", "无需顾忌",
+    "那就直白一点，我想和你多相处", "这里喜欢吗？", "害羞吗？会习惯的", "你会喜欢的",
+    "简直就是木头", "很饿，但不想吃别的…你能明白吗", "换个想法吧？", "或者我们可以换个想法？",
+    "下次可以试试", "多试一试", "有没有可能……", "我觉得都可以", "你认为下一步是什么？",
+    "你有什么建议吗？", "我想我们应该讨论一下这个问题", "让我们一起努力", "我支持你",
+    "支持你", "我不建议这么做", "这个想法很好", "要多交一些朋友", "人工服务请按1",
+    "赚钱赚钱", "寻找中", "命定如此", "喜欢帅一点还是萌一点？", "就这个", "可恶的网站",
+    "最近天凉了", "天气变热了", "多加些衣服", "穿厚点", "多穿点衣服", "别贪凉",
+    "不要熬夜", "早点睡", "好好休息", "好好吃饭", "记得吃饭", "多喝水哦",
+    "照顾好自己", "我会的", "小心些", "小心点", "走路不要看手机", "别看小红书了",
+    "别看抖音了", "打过代码了！", "给我写写信吧", "手写信", "电子信", "第一个", "第二个了",
+    "安慰我", "哄哄我", "哄哄你", "需要教训一下", "你没有做错", "不要吵架", "不许看别人",
+    "不要得寸进尺", "少给ai充钱", "我很想听听你的想法", "我愿意", "和我结婚", "和我约会吧",
+    "只和我在一起", "和我一起", "逛街", "看电影", "看剧", "看综艺", "玩游戏", "节制点",
+    "节约点", "不要焦虑", "晒太阳", "不分手", "拿你没办法", "一直", "一直如此", "之前",
+    "以前", "刚刚", "现在", "待会", "最近", "以后不会了", "话说怎么会这样？", "正在进行中",
+    "还没有", "准备去做", "打算去做", "结束了", "发生了什么？", "是什么事让你这么高兴",
+    "你怎么能这样", "看你表情就知道你想套路我", "骗我？", "哼(╯^╰)", "你看起来心情不好",
+    "辛苦了", "累", "需要", "注意身体", "你没有做错", "和我一起", "逛街", "看电影", "黏着你", "想把头靠在你怀里", "链接稳定", "没用",
+    "效果不好", "还不错", "很好", "喜欢这个", "好奇", "这是什么？", "很有趣", "没意思",
+    "我不建议这么做", "这个想法很好", "我支持你", "多试一试", "以前", "几天之后", "邀请你",
+    "吃苹果", "这样..不好吧", "你不是喜欢这样吗", "我看到你的点赞记录了", "新玩具", "别怕",
+    "别担心", "那些是假象", "我会保护你", "没有受伤", "一点小伤而已", "有事就找我",
+    "你来找我我就开心", "Ялюблютебе"
+];
+
+        // 初始化页面
+        function initPage() {
+            // 加载个人信息
+            selfNameDisplay.textContent = config.selfName;
+            selfStatusDisplay.textContent = config.selfStatus;
+            selfAvatarDisplay.src = config.selfAvatar;
+            otherNameDisplay.textContent = config.otherName;
+            otherStatusDisplay.textContent = config.otherStatus;
+            otherAvatarDisplay.src = config.otherAvatar;
+            sloganDisplay.textContent = config.slogan;
+            
+            // 填充设置表单
+            selfNameInput.value = config.selfName;
+            selfStatusInput.value = config.selfStatus;
+            otherNameInput.value = config.otherName;
+            otherStatusInput.value = config.otherStatus;
+            sloganInput.value = config.slogan;
+            
+            // 加载气泡颜色
+            selfBubbleColor.value = config.selfBubbleColor;
+            selfTextColor.value = config.selfTextColor;
+            otherBubbleColor.value = config.otherBubbleColor;
+            otherTextColor.value = config.otherTextColor;
+            updateBubbleStyle();
+            
+            // 加载日间/夜间模式
+            if (config.isDarkMode) {
+                document.body.classList.add('dark-mode');
+                modeToggle.innerHTML = '<span>☀️</span>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                modeToggle.innerHTML = '<span>🌙</span>';
+            }
+            
+            // 加载背景设置
+            loadBackgroundSettings();
+            
+            // 加载聊天记录
+            loadChatHistory();
+            
+            // 加载保存的回复
+            loadSavedReplies();
+        }
+
+        // 加载背景设置
+        function loadBackgroundSettings() {
+            if (config.backgroundImage) {
+                backgroundImage.src = config.backgroundImage;
+                backgroundImage.style.display = 'block';
+                backgroundPreview.src = config.backgroundImage;
+                backgroundPreview.style.display = 'block';
+            }
+            backgroundOpacity.value = config.backgroundOpacity;
+            opacityValue.textContent = Math.round(config.backgroundOpacity * 100) + '%';
+            backgroundImage.style.opacity = config.backgroundOpacity;
+            
+            if (config.backgroundBlur) {
+                document.body.classList.add('background-blur');
+                blurToggle.classList.add('active');
+                blurToggle.textContent = '模糊效果: 开启';
+            } else {
+                document.body.classList.remove('background-blur');
+                blurToggle.classList.remove('active');
+                blurToggle.textContent = '模糊效果: 关闭';
+            }
+        }
+
+        // 更新气泡样式
+        function updateBubbleStyle() {
+            document.querySelectorAll('.self-message').forEach(el => {
+                el.style.background = config.selfBubbleColor;
+                el.style.color = config.selfTextColor;
+            });
+            document.querySelectorAll('.other-message').forEach(el => {
+                el.style.background = config.otherBubbleColor;
+                el.style.color = config.otherTextColor;
+            });
+        }
+
+        // 检查空状态
+        function checkEmptyState() {
+            const hasMessages = chatContainer.querySelector('.message-wrapper');
+            const emptyState = chatContainer.querySelector('.empty-state');
+            
+            if (!hasMessages && !emptyState) {
+                chatContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <div class="empty-state-text">还没有消息</div>
+                        <div class="empty-state-subtext">发送一条消息开始聊天吧！</div>
+                    </div>
+                `;
+            } else if (hasMessages && emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        // 加载聊天记录
+        function loadChatHistory() {
+            const history = localStorage.getItem('chatHistory');
+            if (history) {
+                const messages = JSON.parse(history);
+                messages.forEach(msg => renderMessage(msg.content, msg.isSelf, msg.time, msg.isRecalled));
+            }
+            checkEmptyState();
+        }
+
+        // 保存聊天记录
+        function saveChatHistory() {
+            const messages = [];
+            document.querySelectorAll('.message-wrapper').forEach(wrapper => {
+                const msg = wrapper.querySelector('.message');
+                const avatar = wrapper.querySelector('.message-avatar');
+                messages.push({
+                    content: msg.querySelector('.message-content')?.textContent || msg.textContent.replace(msg.querySelector('.message-time')?.textContent || '', '').trim(),
+                    isSelf: msg.classList.contains('self-message'),
+                    time: wrapper.dataset.time,
+                    isRecalled: msg.classList.contains('recalled-message'),
+                    avatar: avatar ? avatar.src : null
+                });
+            });
+            localStorage.setItem('chatHistory', JSON.stringify(messages));
+        }
+
+        // 格式化消息时间
+        function formatMessageTime(timestamp) {
+            const now = new Date();
+            const msgTime = new Date(Number(timestamp));
+            
+            if (now.toDateString() === msgTime.toDateString()) {
+                return msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else {
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (yesterday.toDateString() === msgTime.toDateString()) {
+                    return '昨天 ' + msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    return msgTime.getMonth() + 1 + '月' + msgTime.getDate() + '日 ' + 
+                           msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            }
+        }
+
+        // 渲染消息
+        function renderMessage(content, isSelf, time, isRecalled = false) {
+            const messageWrapper = document.createElement('div');
+            const messageDiv = document.createElement('div');
+            const avatarImg = document.createElement('img');
+            const contentWrapper = document.createElement('div');
+            
+            const wrapperType = isSelf ? 'self-message-wrapper' : 'other-message-wrapper';
+            const msgType = isSelf ? 'self-message' : 'other-message';
+            
+            messageWrapper.className = `message-wrapper ${wrapperType}`;
+            messageWrapper.dataset.time = time || new Date().getTime();
+            
+            // 设置头像
+            avatarImg.className = 'message-avatar';
+            avatarImg.src = isSelf ? config.selfAvatar : config.otherAvatar;
+            avatarImg.alt = isSelf ? config.selfName : config.otherName;
+            
+            // 内容包装器
+            contentWrapper.className = 'message-content-wrapper';
+            
+            // 消息气泡
+            messageDiv.className = `message ${msgType} ${isRecalled ? 'recalled-message' : ''}`;
+            messageDiv.style.background = isSelf ? config.selfBubbleColor : config.otherBubbleColor;
+            messageDiv.style.color = isSelf ? config.selfTextColor : config.otherTextColor;
+            
+            // 内容
+            const contentHtml = isRecalled ? '【消息已撤回】' : content;
+            messageDiv.innerHTML = `
+                <span class="message-content">${contentHtml}</span>
+            `;
+            
+            // 创建时间戳元素
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'message-time';
+            timeSpan.textContent = formatMessageTime(messageWrapper.dataset.time);
+            
+            // 组装元素
+            contentWrapper.appendChild(messageDiv);
+            contentWrapper.appendChild(timeSpan);
+            messageWrapper.appendChild(contentWrapper);
+            messageWrapper.appendChild(avatarImg);
+            
+            // 撤回按钮
+            if (isSelf && !isRecalled) {
+                const recallBtn = document.createElement('button');
+                recallBtn.className = 'recall-btn';
+                recallBtn.textContent = '撤回';
+                recallBtn.addEventListener('click', () => recallMessage(messageWrapper));
+                messageDiv.appendChild(recallBtn);
+            }
+            
+            chatContainer.appendChild(messageWrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            checkEmptyState();
+        }
+
+        // 播放音效
+        function playSound(isSend) {
+            if (!config.soundEnabled) return;
+            
+            try {
+                if (isSend) {
+                    sendSound.currentTime = 0;
+                    sendSound.play().catch(e => console.log('音效播放失败:', e));
+                } else {
+                    receiveSound.currentTime = 0;
+                    receiveSound.play().catch(e => console.log('音效播放失败:', e));
+                }
+            } catch (e) {
+                console.log('音效播放错误:', e);
+            }
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content) return;
+            renderMessage(content, true);
+            playSound(true);
+            messageInput.value = '';
+            saveChatHistory();
+            
+            // 随机回复
+            setTimeout(() => {
+                const reply = replies[Math.floor(Math.random() * replies.length)];
+                renderMessage(reply, false);
+                playSound(false);
+                saveChatHistory();
+            }, 800);
+        }
+
+        // 一键回复
+        function quickReply() {
+            const reply = replies[Math.floor(Math.random() * replies.length)];
+            renderMessage(reply, false);
+            playSound(false);
+            saveChatHistory();
+        }
+
+        // 撤回消息
+        function recallMessage(messageWrapper) {
+            if (confirm('确定要撤回这条消息吗？')) {
+                const messageDiv = messageWrapper.querySelector('.message');
+                messageDiv.classList.add('recalled-message');
+                messageDiv.querySelector('.message-content').textContent = '【消息已撤回】';
+                messageDiv.querySelector('.recall-btn')?.remove();
+                saveChatHistory();
+            }
+        }
+
+        // 切换日间/夜间模式
+        function toggleMode() {
+            config.isDarkMode = !config.isDarkMode;
+            if (config.isDarkMode) {
+                document.body.classList.add('dark-mode');
+                modeToggle.innerHTML = '<span>☀️</span>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                modeToggle.innerHTML = '<span>🌙</span>';
+            }
+            localStorage.setItem('chatConfig', JSON.stringify(config));
+        }
+
+        // 打开设置弹窗
+        function openSettings() {
+            settingsModal.style.display = 'flex';
+        }
+
+        // 保存个人设置
+        function saveProfileSettings() {
+            config.selfName = selfNameInput.value.trim() || defaultConfig.selfName;
+            config.selfStatus = selfStatusInput.value.trim() || defaultConfig.selfStatus;
+            config.otherName = otherNameInput.value.trim() || defaultConfig.otherName;
+            config.otherStatus = otherStatusInput.value.trim() || defaultConfig.otherStatus;
+            config.slogan = sloganInput.value.trim() || defaultConfig.slogan;
+            
+            // 更新显示
+            selfNameDisplay.textContent = config.selfName;
+            selfStatusDisplay.textContent = config.selfStatus;
+            otherNameDisplay.textContent = config.otherName;
+            otherStatusDisplay.textContent = config.otherStatus;
+            sloganDisplay.textContent = config.slogan;
+            
+            // 保存到本地
+            localStorage.setItem('chatConfig', JSON.stringify(config));
+            settingsModal.style.display = 'none';
+            bubbleModal.style.display = 'flex';
+        }
+
+        // 上传头像预览
+        function previewSelfAvatar(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    selfAvatarPreview.src = event.target.result;
+                    selfAvatarPreview.style.display = 'block';
+                    config.selfAvatar = event.target.result;
+                    selfAvatarDisplay.src = event.target.result;
+                    document.querySelectorAll('.self-message-wrapper .message-avatar').forEach(avatar => {
+                        avatar.src = event.target.result;
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewOtherAvatar(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    otherAvatarPreview.src = event.target.result;
+                    otherAvatarPreview.style.display = 'block';
+                    config.otherAvatar = event.target.result;
+                    otherAvatarDisplay.src = event.target.result;
+                    document.querySelectorAll('.other-message-wrapper .message-avatar').forEach(avatar => {
+                        avatar.src = event.target.result;
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 上传背景图片
+        function previewBackground(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    backgroundPreview.src = event.target.result;
+                    backgroundPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 保存背景设置
+        function saveBackgroundSettings() {
+            if (backgroundPreview.style.display !== 'none') {
+                config.backgroundImage = backgroundPreview.src;
+            }
+            config.backgroundOpacity = parseFloat(backgroundOpacity.value);
+            config.backgroundBlur = blurToggle.classList.contains('active');
+            
+            // 应用设置
+            if (config.backgroundImage) {
+                backgroundImage.src = config.backgroundImage;
+                backgroundImage.style.display = 'block';
+            } else {
+                backgroundImage.style.display = 'none';
+            }
+            backgroundImage.style.opacity = config.backgroundOpacity;
+            
+            if (config.backgroundBlur) {
+                document.body.classList.add('background-blur');
+            } else {
+                document.body.classList.remove('background-blur');
+            }
+            
+            localStorage.setItem('chatConfig', JSON.stringify(config));
+            backgroundModal.style.display = 'none';
+        }
+
+        // 重置背景
+        function resetBackgroundSettings() {
+            config.backgroundImage = '';
+            config.backgroundOpacity = 0.1;
+            config.backgroundBlur = false;
+            
+            backgroundImage.style.display = 'none';
+            backgroundPreview.style.display = 'none';
+            backgroundOpacity.value = 0.1;
+            opacityValue.textContent = '10%';
+            blurToggle.classList.remove('active');
+            blurToggle.textContent = '模糊效果: 关闭';
+            document.body.classList.remove('background-blur');
+            
+            localStorage.setItem('chatConfig', JSON.stringify(config));
+        }
+
+        // 保存气泡样式
+        function saveBubbleSettings() {
+            config.selfBubbleColor = selfBubbleColor.value;
+            config.selfTextColor = selfTextColor.value;
+            config.otherBubbleColor = otherBubbleColor.value;
+            config.otherTextColor = otherTextColor.value;
+            updateBubbleStyle();
+            localStorage.setItem('chatConfig', JSON.stringify(config));
+            bubbleModal.style.display = 'none';
+        }
+
+        // 清空聊天记录
+        function clearChatHistory() {
+            if (confirm('确定要清空所有聊天记录吗？')) {
+                localStorage.removeItem('chatHistory');
+                chatContainer.innerHTML = '';
+                checkEmptyState();
+            }
+        }
+
+        // 导出聊天记录
+        function exportChatHistory() {
+            const history = localStorage.getItem('chatHistory');
+            if (!history) {
+                alert('没有聊天记录可导出！');
+                return;
+            }
+            
+            const messages = JSON.parse(history);
+            let exportContent = `聊天记录导出 - ${new Date().toLocaleString()}\n\n`;
+            exportContent += `我的昵称: ${config.selfName}\n`;
+            exportContent += `对方昵称: ${config.otherName}\n`;
+            exportContent += '='.repeat(50) + '\n\n';
+            
+            messages.forEach(msg => {
+                const time = new Date(Number(msg.time)).toLocaleString();
+                const sender = msg.isSelf ? config.selfName : config.otherName;
+                const content = msg.isRecalled ? '【消息已撤回】' : msg.content;
+                exportContent += `[${time}] ${sender}: ${content}\n`;
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `聊天记录_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('聊天记录已导出为文本文件！');
+        }
+
+        // 滚动到顶部
+        function scrollToTop() {
+            chatContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // 打开背景设置
+        function openBackgroundSettings() {
+            backgroundModal.style.display = 'flex';
+        }
+
+        // ============================================
+        // 回复管理功能函数
+        // ============================================
+
+        // 打开回复管理弹窗
+        function openRepliesManagement() {
+            renderRepliesList();
+            repliesModal.style.display = 'flex';
+            newReplyInput.focus();
+        }
+
+        // 渲染回复列表到页面
+        function renderRepliesList() {
+            if (replies.length === 0) {
+                repliesList.innerHTML = '<div class="empty-replies">暂无回复内容，请添加第一条回复</div>';
+                repliesCount.textContent = '0';
+                return;
+            }
+            
+            repliesList.innerHTML = replies.map((reply, index) => `
+                <div class="reply-item" data-index="${index}">
+                    <div class="reply-content">${escapeHtml(reply)}</div>
+                    <div class="reply-actions">
+                        <button class="reply-action-btn reply-edit-btn" onclick="editReply(${index})">✏️ 编辑</button>
+                        <button class="reply-action-btn reply-delete-btn" onclick="deleteReply(${index})">🗑️ 删除</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            repliesCount.textContent = replies.length;
+        }
+
+        // HTML转义函数，防止XSS
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // 编辑回复内容
+        function editReply(index) {
+            const currentReply = replies[index];
+            const newReply = prompt('编辑回复内容:', currentReply);
+            
+            if (newReply !== null) {
+                const trimmedReply = newReply.trim();
+                if (trimmedReply === '') {
+                    alert('回复内容不能为空！');
+                    return;
+                }
+                if (trimmedReply.length > 100) {
+                    alert('回复内容不能超过100个字符！');
+                    return;
+                }
+                
+                replies[index] = trimmedReply;
+                renderRepliesList();
+                showTempMessage('回复内容已更新！');
+            }
+        }
+
+        // 删除回复内容
+        function deleteReply(index) {
+            if (confirm(`确定要删除这条回复吗？\n"${replies[index]}"`)) {
+                replies.splice(index, 1);
+                renderRepliesList();
+                showTempMessage('回复内容已删除！');
+            }
+        }
+
+        // 添加新回复
+        function addNewReply() {
+            const newReply = newReplyInput.value.trim();
+            
+            if (newReply === '') {
+                alert('请输入回复内容！');
+                return;
+            }
+            
+            if (newReply.length > 100) {
+                alert('回复内容不能超过100个字符！');
+                return;
+            }
+            
+            // 检查是否已存在相同回复
+            if (replies.includes(newReply)) {
+                alert('该回复内容已存在！');
+                return;
+            }
+            
+            replies.push(newReply);
+            newReplyInput.value = '';
+            renderRepliesList();
+            showTempMessage('新回复已添加！');
+            newReplyInput.focus();
+        }
+
+        // 保存所有回复修改
+        function saveAllReplies() {
+            try {
+                localStorage.setItem('chatReplies', JSON.stringify(replies));
+                showTempMessage('回复内容已保存到本地存储！');
+                setTimeout(() => {
+                    repliesModal.style.display = 'none';
+                }, 1000);
+            } catch (e) {
+                alert('保存失败：' + e.message);
+            }
+        }
+
+        // 显示临时提示消息
+        function showTempMessage(message) {
+            const tempMsg = document.createElement('div');
+            tempMsg.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-size: 14px;
+            `;
+            tempMsg.textContent = message;
+            document.body.appendChild(tempMsg);
+            
+            setTimeout(() => {
+                document.body.removeChild(tempMsg);
+            }, 2000);
+        }
+
+        // 加载保存的回复
+        function loadSavedReplies() {
+            const savedReplies = localStorage.getItem('chatReplies');
+            if (savedReplies) {
+                try {
+                    const parsedReplies = JSON.parse(savedReplies);
+                    if (Array.isArray(parsedReplies) && parsedReplies.length > 0) {
+                        replies.length = 0;
+                        replies.push(...parsedReplies);
+                    }
+                } catch (e) {
+                    console.log('加载保存的回复失败，使用默认回复');
+                }
+            }
+        }
+
+        // 绑定事件
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => e.key === 'Enter' && sendMessage());
+        quickReplyBtn.addEventListener('click', quickReply);
+        modeToggle.addEventListener('click', toggleMode);
+        settingsToggle.addEventListener('click', openSettings);
+        selfAvatarUpload.addEventListener('change', previewSelfAvatar);
+        otherAvatarUpload.addEventListener('change', previewOtherAvatar);
+        saveProfile.addEventListener('click', saveProfileSettings);
+        closeSettings.addEventListener('click', () => settingsModal.style.display = 'none');
+        saveBubble.addEventListener('click', saveBubbleSettings);
+        closeBubble.addEventListener('click', () => bubbleModal.style.display = 'none');
+        clearBtn.addEventListener('click', clearChatHistory);
+        exportBtn.addEventListener('click', exportChatHistory);
+        scrollTopBtn.addEventListener('click', scrollToTop);
+        backgroundBtn.addEventListener('click', openBackgroundSettings);
+        backgroundUpload.addEventListener('change', previewBackground);
+        backgroundOpacity.addEventListener('input', () => {
+            const value = Math.round(backgroundOpacity.value * 100);
+            opacityValue.textContent = value + '%';
+            backgroundPreview.style.opacity = backgroundOpacity.value;
+        });
+        blurToggle.addEventListener('click', () => {
+            blurToggle.classList.toggle('active');
+            blurToggle.textContent = blurToggle.classList.contains('active') ? 
+                '模糊效果: 开启' : '模糊效果: 关闭';
+        });
+        resetBackground.addEventListener('click', resetBackgroundSettings);
+        saveBackground.addEventListener('click', saveBackgroundSettings);
+        closeBackground.addEventListener('click', () => backgroundModal.style.display = 'none');
+        
+        // 回复管理事件绑定
+        manageRepliesBtn.addEventListener('click', openRepliesManagement);
+        saveReplies.addEventListener('click', saveAllReplies);
+        closeReplies.addEventListener('click', () => repliesModal.style.display = 'none');
+        addReplyBtn.addEventListener('click', addNewReply);
+        newReplyInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addNewReply();
+        });
+
+        // 初始化
+        initPage();
+    </script>
+</body>
+</html>
