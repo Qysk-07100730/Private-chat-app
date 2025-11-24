@@ -1,0 +1,12 @@
+{
+  "name": "私语角落",
+  "short_name": "私语角落",
+  "description": "私人聊天模拟应用",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#2c3e50",
+  "orientation": "portrait",
+  "scope": "./",
+  "icons": []
+}
