@@ -1003,44 +1003,114 @@
     </div>
 
     <script>
-    // === Service Worker 注册 ===
-    // 注册 Service Worker
+
+        // ==================== 第4步：Edge PWA 专用配置 ====================
+
+// Edge 浏览器 PWA 检测和安装
+let edgeDeferredPrompt;
+
+// Edge 安装提示事件监听
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('📱 Edge 安装提示触发');
+  e.preventDefault();
+  edgeDeferredPrompt = e;
+  showEdgeInstallPrompt();
+});
+
+// 显示自定义安装提示
+function showEdgeInstallPrompt() {
+  console.log('🔄 Edge PWA 可以安装');
+  
+  // 创建安装按钮
+  const installBtn = document.createElement('button');
+  installBtn.textContent = '📱 安装为应用';
+  installBtn.style.cssText = `
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 14px;
+  `;
+  
+  installBtn.addEventListener('click', async () => {
+    if (edgeDeferredPrompt) {
+      edgeDeferredPrompt.prompt();
+      const { outcome } = await edgeDeferredPrompt.userChoice;
+      console.log('用户选择:', outcome);
+      installBtn.remove();
+      edgeDeferredPrompt = null;
+    }
+  });
+  
+  document.body.appendChild(installBtn);
+  
+  setTimeout(() => {
+    if (installBtn.parentNode) {
+      installBtn.remove();
+    }
+  }, 10000);
+}
+
+// 检测 Edge PWA 运行模式
+function checkEdgePWAMode() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+  
+  console.log('独立模式:', isStandalone, '全屏模式:', isFullscreen);
+  
+  if (isStandalone || isFullscreen) {
+    console.log('🎯 Edge PWA 独立模式运行 - 真正的应用窗口');
+    document.body.classList.add('edge-pwa-standalone');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+  } else {
+    console.log('🌐 Edge 浏览器模式运行 - 在浏览器标签页中');
+    document.body.classList.add('edge-pwa-browser');
+  }
+}
+
+// 检测是否是 Edge 浏览器并初始化
+if (navigator.userAgent.includes('Edg/')) {
+  console.log('🔍 检测到 Edge 浏览器，启用 PWA 优化');
+  
+  window.addEventListener('load', function() {
+    console.log('🚀 页面加载完成，初始化 Edge PWA');
+    checkEdgePWAMode();
+    
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js')
-          .then(function(registration) {
-            console.log('✅ ServiceWorker 注册成功: ', registration.scope);
-            
-            // 检测是否从主屏幕启动
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('✅ Edge Service Worker 注册成功');
+          
+          setTimeout(() => {
             if (window.matchMedia('(display-mode: standalone)').matches) {
-              console.log('🎯 从主屏幕启动 - 独立模式');
-              document.body.classList.add('pwa-standalone');
+              console.log('🚀 从 Edge PWA 启动 - 应用窗口模式');
+              window.scrollTo(0, 1);
             }
-          })
-          .catch(function(err) {
-            console.log('❌ ServiceWorker 注册失败: ', err);
-          });
-      });
+          }, 100);
+        })
+        .catch(err => {
+          console.log('❌ Edge Service Worker 注册失败:', err);
+        });
     }
+  });
+  
+  window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+    console.log('显示模式变化:', e.matches);
+    checkEdgePWAMode();
+  });
+} else {
+  console.log('🌐 非 Edge 浏览器，使用标准 PWA 配置');
+}
 
-    // Edge 浏览器专用检测
-    if (navigator.userAgent.includes('Edg/')) {
-      console.log('🔍 检测到 Edge 浏览器');
-      window.addEventListener('load', function() {
-        // 强制激活 Service Worker
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.ready.then(function(registration) {
-            console.log('🚀 Edge Service Worker 已准备就绪');
-          });
-        }
-      });
-    }
-    // === Service Worker 注册结束 ===
-
-    // 元素获取
-    const chatContainer = document.getElementById('chat-container');
-    const messageInput = document.getElementById('message-input');
-    // ... 后面是你原有的代码
+// ==================== Edge 配置结束 ====================
         
         // 元素获取
         const chatContainer = document.getElementById('chat-container');
