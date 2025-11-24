@@ -2,15 +2,32 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>私语角落</title>
     
-    <!-- PWA 配置 -->
-<link rel="manifest" href="./app.webmanifest">
-<meta name="theme-color" content="#2c3e50">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="私语角落">
+    <!-- === Edge 专用 PWA 配置 === -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./app.webmanifest" crossorigin="use-credentials">
+    
+    <!-- 主题色 -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="msapplication-TileColor" content="#2c3e50">
+    <meta name="msapplication-TileImage" content="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgdmlld0JveD0iMCAwIDE0NCAxNDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNDQiIGhlaWdodD0iMTQ0IiBmaWxsPSIjMmMzZTUwIi8+Cjx0ZXh0IHg9IjcyIiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjU2IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+4pyMPC90ZXh0Pgo8L3N2Zz4=">
+    
+    <!-- Edge PWA 配置 -->
+    <meta name="application-name" content="私语角落">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Microsoft 特定配置 -->
+    <meta name="msapplication-starturl" content="./">
+    <meta name="msapplication-window" content="width=device-width;height=device-height">
+    <meta name="msapplication-navbutton-color" content="#2c3e50">
+    
+    <!-- 其他浏览器兼容 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="私语角落">
+    <!-- === PWA 配置结束 === -->
     
     <style>
         * {
